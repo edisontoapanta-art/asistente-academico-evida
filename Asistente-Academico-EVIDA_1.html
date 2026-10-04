@@ -1,0 +1,1019 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Asistente Académico EVIDA</title><meta name="description" content="Herramienta para desarrollar, documentar, revisar y entregar actividades ACD, APE y AA con el ciclo EVIDA.">
+<style id="appcss">
+:root{
+  --bg:#f5f3ee;--surface:#fff;--ink:#1b2430;--muted:#4f5b6b;--line:#d8d3c7;--brand:#17375e;--brand2:#234a7a;
+  --e:#1f5fa8;--e-bg:#e8f0fa;--i:#0b7a75;--i-bg:#e1f4f2;--v:#a04a00;--v-bg:#fcefdc;--d:#6a3aa0;--d-bg:#f0e9f8;--a:#a8224f;--a-bg:#fbe8ee;
+  --ok:#1d6b3a;--ok-bg:#e4f3ea;--warn:#7a4b00;--warn-bg:#fff3d6;--err:#9b1c1c;--err-bg:#fde8e8;--info:#17375e;--info-bg:#e9eef6;
+  --r:10px;--sans:system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;--serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+}
+*{box-sizing:border-box}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5}
+h1,h2,h3,h4{font-family:var(--serif);line-height:1.25;margin:0 0 .5rem;color:var(--brand)}
+h1{font-size:1.75rem}h2{font-size:1.35rem}h3{font-size:1.1rem}h4{font-size:1rem}
+p{margin:0 0 .75rem}
+a{color:var(--brand2)}
+.skip{position:absolute;left:-999px;top:0;background:#fff;padding:.5rem 1rem;z-index:100}
+.skip:focus{left:8px;top:8px}
+:focus-visible{outline:3px solid #f2a900;outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+
+/* cabecera */
+.top{background:var(--brand);color:#fff}
+.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding-top:10px;padding-bottom:10px}
+.brand{display:flex;align-items:baseline;gap:10px;color:#fff;text-decoration:none}
+.brand b{font-family:var(--serif);font-size:1.35rem;letter-spacing:.04em}
+.brand span{font-size:.8rem;opacity:.9}
+.brand-letters{display:inline-flex;gap:3px;margin-right:2px}
+.brand-letters i{font-style:normal;font-weight:700;width:22px;height:22px;border-radius:5px;display:grid;place-items:center;font-size:.8rem;color:#fff}
+.nav{display:flex;flex-wrap:wrap;gap:4px;flex:1}
+.nav a{color:#fff;text-decoration:none;padding:8px 12px;border-radius:8px;font-size:.95rem;min-height:44px;display:inline-flex;align-items:center}
+.nav a:hover{background:rgba(255,255,255,.14)}
+.nav a[aria-current="page"]{background:#fff;color:var(--brand);font-weight:600}
+.rol{display:inline-flex;background:rgba(255,255,255,.15);border-radius:999px;padding:3px}
+.rol button{border:0;background:transparent;color:#fff;padding:8px 14px;border-radius:999px;cursor:pointer;font:inherit;font-size:.9rem;min-height:40px}
+.rol button[aria-pressed="true"]{background:#fff;color:var(--brand);font-weight:600}
+.savestat{font-size:.8rem;opacity:.9}
+main{padding:20px 0 120px}
+.foot{font-size:.82rem;color:var(--muted);padding:16px 0 90px;border-top:1px solid var(--line);margin-top:24px}
+
+/* botones */
+.btn{font:inherit;font-size:.95rem;border:1.5px solid var(--brand);background:#fff;color:var(--brand);border-radius:8px;padding:9px 16px;cursor:pointer;min-height:44px;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+.btn:hover{background:var(--info-bg)}
+.btn.pri{background:var(--brand);color:#fff}.btn.pri:hover{background:var(--brand2)}
+.btn.sm{padding:5px 11px;min-height:36px;font-size:.85rem}
+.btn.dng{border-color:var(--err);color:var(--err)}.btn.dng:hover{background:var(--err-bg)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.row.sp{justify-content:space-between}
+.mt{margin-top:16px}.mb{margin-bottom:16px}
+
+/* tarjetas y campos */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.card h3{margin-bottom:.4rem}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;min-width:0}
+.field>label,fieldset legend{font-size:.9rem;font-weight:600}
+.req{color:var(--err)}
+input[type=text],input[type=number],input[type=date],select,textarea{font:inherit;font-size:.95rem;border:1.5px solid #9aa3ae;border-radius:7px;padding:8px 10px;background:#fff;color:var(--ink);width:100%;min-height:42px}
+textarea{resize:vertical;min-height:72px}
+.hint{font-size:.82rem;color:var(--muted);margin:0}
+fieldset{border:0;padding:0;margin:0 0 10px;min-width:0}
+.radios{display:flex;flex-wrap:wrap;gap:8px}
+.radios label{display:inline-flex;align-items:center;gap:6px;border:1.5px solid #9aa3ae;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:.92rem;font-weight:400;min-height:42px;background:#fff}
+.radios label:has(input:checked){border-color:var(--brand);background:var(--info-bg);font-weight:600}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:.92rem;margin-bottom:8px}
+.check input{margin-top:4px;width:18px;height:18px}
+.tipos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tipos label{border:1.5px solid #9aa3ae;border-radius:10px;padding:12px;cursor:pointer;background:#fff;display:block}
+.tipos label:has(input:checked){border-color:var(--brand);background:var(--info-bg);box-shadow:inset 0 0 0 1px var(--brand)}
+.tipos b{font-family:var(--serif);font-size:1.15rem;color:var(--brand)}
+.tipos input{margin-right:6px}
+
+/* avisos */
+.callout{border-radius:8px;padding:10px 14px;margin:0 0 12px;border-left:5px solid;font-size:.93rem}
+.callout.info{background:var(--info-bg);border-color:var(--info)}
+.callout.ok{background:var(--ok-bg);border-color:var(--ok);color:#12441f}
+.callout.warn{background:var(--warn-bg);border-color:#c98a00;color:#4f3000}
+.callout.err{background:var(--err-bg);border-color:var(--err);color:#6b1212}
+.callout ul{margin:.3rem 0 0;padding-left:1.2rem}
+.callout b.t{display:block;margin-bottom:2px}
+.chip{display:inline-block;border-radius:999px;padding:2px 10px;font-size:.78rem;font-weight:600;background:var(--info-bg);color:var(--brand);border:1px solid #c5d0e0;margin:0 4px 4px 0}
+.chip.demo{background:#fff3d6;color:#4f3000;border-color:#e0b040}
+.chip.ok{background:var(--ok-bg);color:var(--ok);border-color:#a8d4b8}
+.chip.warn{background:var(--warn-bg);color:var(--warn);border-color:#e0b040}
+.chip.err{background:var(--err-bg);color:var(--err);border-color:#e3a3a3}
+.demo-band{background:#fff3d6;border:1.5px dashed #c98a00;color:#4f3000;padding:8px 12px;border-radius:8px;margin-bottom:12px;font-size:.9rem;font-weight:600}
+
+/* barra de progreso y pasos */
+.worktop{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;position:sticky;top:0;z-index:20}
+.worktop h1{font-size:1.1rem;margin:0}
+.worktop .meta{font-size:.85rem;color:var(--muted)}
+.pbar{height:10px;background:#e5e1d6;border-radius:999px;overflow:hidden;flex:1;min-width:120px}
+.pbar i{display:block;height:100%;background:var(--brand);border-radius:999px;transition:width .3s}
+.steps{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 2px;padding:0;list-style:none}
+.steps li{display:contents}
+.step{font:inherit;display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:4px 12px 4px 5px;cursor:pointer;min-height:40px;color:var(--ink)}
+.step .bd{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;font-size:.9rem;background:#6b7580}
+.step .lb{font-size:.88rem}
+.step[aria-current="step"]{border-width:2.5px;font-weight:700}
+.step.done .bd::after{content:"✓";font-size:.6rem;margin-left:1px}
+.step[disabled]{opacity:.55;cursor:not-allowed;background:#f1eee6}
+.step.E .bd{background:var(--e)}.step.I .bd{background:var(--i)}.step.V .bd{background:var(--v)}.step.D .bd{background:var(--d)}.step.A .bd{background:var(--a)}
+.step.E[aria-current="step"]{border-color:var(--e);background:var(--e-bg)}.step.I[aria-current="step"]{border-color:var(--i);background:var(--i-bg)}
+.step.V[aria-current="step"]{border-color:var(--v);background:var(--v-bg)}.step.D[aria-current="step"]{border-color:var(--d);background:var(--d-bg)}.step.A[aria-current="step"]{border-color:var(--a);background:var(--a-bg)}
+.step.x[aria-current="step"]{border-color:var(--brand);background:var(--info-bg)}
+.arrow{color:var(--muted);font-size:1rem}
+.cycle{color:var(--v);font-weight:700;font-size:1.1rem}
+.sepbar{width:1px;height:26px;background:var(--line);margin:0 4px}
+
+/* fases */
+.phase{border-radius:var(--r);padding:14px 16px;margin-bottom:14px;display:flex;gap:14px;align-items:center;border:1px solid}
+.phase .big{width:52px;height:52px;border-radius:12px;color:#fff;display:grid;place-items:center;font-family:var(--serif);font-size:1.8rem;font-weight:700;flex:none}
+.phase h2{margin:0;color:inherit}
+.phase p{margin:0;font-size:.93rem}
+.phase.E{background:var(--e-bg);border-color:var(--e);color:#143f70}.phase.E .big{background:var(--e)}
+.phase.I{background:var(--i-bg);border-color:var(--i);color:#075a56}.phase.I .big{background:var(--i)}
+.phase.V{background:var(--v-bg);border-color:var(--v);color:#703300}.phase.V .big{background:var(--v)}
+.phase.D{background:var(--d-bg);border-color:var(--d);color:#4a2672}.phase.D .big{background:var(--d)}
+.phase.A{background:var(--a-bg);border-color:var(--a);color:#7a1738}.phase.A .big{background:var(--a)}
+.phase.x{background:var(--info-bg);border-color:var(--brand)}.phase.x .big{background:var(--brand)}
+details.help{background:#fff;border:1px dashed #9aa3ae;border-radius:8px;padding:8px 12px;margin-bottom:14px;font-size:.92rem}
+details.help summary{cursor:pointer;font-weight:600;color:var(--brand);min-height:32px;display:flex;align-items:center}
+details.help .ex{background:var(--warn-bg);border-radius:6px;padding:8px 10px;margin-top:8px}
+.item{border:1.5px solid var(--line);border-left-width:6px;border-radius:8px;padding:12px;margin-bottom:12px;background:#fff}
+.item.E{border-left-color:var(--e)}.item.I{border-left-color:var(--i)}.item.V{border-left-color:var(--v)}.item.D{border-left-color:var(--d)}.item.A{border-left-color:var(--a)}
+.item .ih{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.item .ih b{font-family:var(--serif)}
+.st{font-size:.85rem;font-weight:600;margin:4px 0 0}
+.st.ok{color:var(--ok)}.st.no{color:var(--err)}.st.op{color:var(--warn)}
+.cols5{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.col{border-radius:8px;padding:10px;border:1.5px solid}
+.col h4{display:flex;align-items:center;gap:6px;margin-bottom:2px}
+.col .ds{font-size:.8rem;margin-bottom:8px}
+.col.hecho{background:#eaf1f9;border-color:#1f5fa8}.col.hecho h4{color:#143f70}
+.col.inferencia{background:#e3f4f2;border-color:#0b7a75}.col.inferencia h4{color:#075a56}
+.col.supuesto{background:#fcefdc;border-color:#a04a00}.col.supuesto h4{color:#703300}
+.col.opinion{background:#f1f1f1;border-color:#666}.col.opinion h4{color:#333}
+.col.hipotesis{background:#f0e9f8;border-color:#6a3aa0}.col.hipotesis h4{color:#4a2672}
+.col .mini{background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px;margin-bottom:8px}
+.col .mini textarea{min-height:60px}
+.refs{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.refs label{font-size:.78rem;border:1px solid #9aa3ae;border-radius:5px;padding:2px 7px;cursor:pointer;background:#fff;display:inline-flex;gap:4px;align-items:center}
+.refs label:has(input:checked){background:var(--e-bg);border-color:var(--e);font-weight:700}
+.refs input{margin:0}
+
+/* tablas */
+.tw{overflow-x:auto;margin-bottom:12px}
+table{border-collapse:collapse;width:100%;font-size:.88rem;background:#fff}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:#efece4;font-weight:600}
+td select{min-width:70px;padding:4px 6px;min-height:36px}
+td input[type=text]{min-height:36px}
+tfoot td{font-weight:700;background:#faf8f2}
+
+/* panel */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px 16px}
+.stat b{font-family:var(--serif);font-size:2rem;color:var(--brand);display:block;line-height:1}
+.acts{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.act{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:8px}
+.act h3{margin:0}
+.mi{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.hist{list-style:none;margin:0;padding:0}
+.hist li{border-left:4px solid var(--v);background:#fff;padding:8px 12px;margin-bottom:8px;border-radius:0 6px 6px 0;font-size:.9rem}
+.hist li.refuerzo{border-color:var(--ok)}.hist li.cambio{border-color:var(--a)}
+.hist small{color:var(--muted)}
+
+/* pie fijo regla IA */
+.iarule{position:fixed;left:0;right:0;bottom:0;background:#17375e;color:#fff;padding:8px 16px;font-size:.88rem;z-index:30;border-top:3px solid #f2a900}
+.iarule .wrap{display:flex;gap:10px;align-items:center}
+.iarule b{color:#ffd77a;white-space:nowrap}
+
+/* modal */
+.mback{position:fixed;inset:0;background:rgba(20,28,40,.55);display:grid;place-items:center;z-index:60;padding:16px}
+.modal{background:#fff;border-radius:12px;max-width:560px;width:100%;padding:20px;max-height:90vh;overflow:auto}
+.toast{position:fixed;right:16px;bottom:64px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;z-index:70;font-size:.9rem}
+
+/* informe */
+.rep{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:28px;margin-bottom:20px}
+.rep h1{font-size:1.6rem;border-bottom:3px solid var(--brand);padding-bottom:6px}
+.rep h2{margin-top:1.4rem;padding:4px 10px;border-radius:6px;font-size:1.15rem}
+.rep h2.E{background:var(--e-bg);color:#143f70}.rep h2.I{background:var(--i-bg);color:#075a56}.rep h2.V{background:var(--v-bg);color:#703300}.rep h2.D{background:var(--d-bg);color:#4a2672}.rep h2.A{background:var(--a-bg);color:#7a1738}.rep h2.x{background:var(--info-bg)}
+.rep .kv{display:grid;grid-template-columns:200px 1fr;gap:4px 12px;font-size:.92rem}
+.rep .kv dt{font-weight:600;color:var(--muted)}.rep .kv dd{margin:0}
+.arg{border:1.5px solid var(--a);border-radius:10px;overflow:hidden}
+.arg>div{padding:10px 14px;border-bottom:1px solid #eac3d0}.arg>div:last-child{border-bottom:0}
+.arg b{display:block;color:var(--a);font-size:.82rem;text-transform:uppercase;letter-spacing:.05em}
+.arg .tesis{background:var(--a-bg);font-family:var(--serif);font-size:1.1rem}
+.fb{background:#f3f7e8;border:1.5px solid #8aa845;border-radius:8px;padding:10px;margin:8px 0}
+.fb b{font-size:.85rem;color:#3d5a10}
+.bad{display:inline-block;border:2px solid;border-radius:6px;padding:2px 10px;font-weight:700;font-size:.8rem;margin-left:8px;vertical-align:middle}
+.bad.b{color:#7a4b00;border-color:#c98a00}.bad.f{color:var(--ok);border-color:var(--ok)}.bad.d{color:#4f3000;border-color:#c98a00;background:#fff3d6}
+.print-only{display:none}
+.empty{color:var(--muted);font-style:italic}
+
+@media (max-width:760px){
+  .g2,.g3,.g4,.g5,.tipos{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr}
+  .nav a{padding:8px 9px;font-size:.88rem}
+  .step .lb{display:none}.step[aria-current="step"] .lb{display:inline}
+  .phase{flex-direction:row}
+  .rep{padding:14px}.rep .kv{grid-template-columns:1fr}
+  .iarule{font-size:.78rem;padding:6px 10px}
+  .worktop{position:static}
+}
+@media print{
+  @page{size:A4;margin:14mm}
+  body{background:#fff;font-size:10.5pt}
+  .top,.foot,.iarule,.noprint,.toast,.nav,.worktop,.btn,.mback{display:none!important}
+  main{padding:0}
+  .wrap{max-width:none;padding:0}
+  .rep{border:0;padding:0;margin:0;break-after:page}
+  .rep:last-child{break-after:auto}
+  .print-only{display:block}
+  .screen-only{display:none!important}
+  table{font-size:8.5pt}th,td{padding:3px 4px}
+  h2{break-after:avoid}.item,.arg,tr{break-inside:avoid}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style></head><body><div id="app"></div><noscript>Esta herramienta necesita JavaScript.</noscript><script>
+'use strict';
+/* ====== Constantes pedagógicas (fuente: Documento Fundacional Metodología EVIDA v1.0) ====== */
+const FASES=[
+ {k:'E',n:'Evidencia',q:'¿Qué sé y con qué respaldo?',prod:'Matriz de evidencias',d:'Reúne datos que puedas señalar con precisión y di de dónde salen. Todavía no concluyas.'},
+ {k:'V',n:'Verificación',q:'¿Cómo compruebo que es confiable?',prod:'Registro de verificación',d:'Somete tu evidencia a prueba: rastrea la fuente original, contrasta y busca lo que podría contradecirla. Si encuentras errores, vuelve a Evidencia.'},
+ {k:'I',n:'Interpretación',q:'¿Qué significa la evidencia?',prod:'Interpretaciones e hipótesis',d:'Explica qué significa la evidencia ya verificada, sin confundir el dato con tu lectura del dato.'},
+ {k:'D',n:'Decisión',q:'¿Qué concluyo, propongo o hago?',prod:'Decisión razonada',d:'Compara alternativas con criterios explícitos. Tu decisión debe ser proporcional a la evidencia que tienes; puede ser provisional.'},
+ {k:'A',n:'Argumentación',q:'¿Por qué mi decisión o conclusión es defendible?',prod:'Argumento final',d:'Muestra cómo se conectan evidencia, criterios y conclusión, y qué objeción y límites enfrenta.'}
+];
+const ORDEN=['ctx','E','V','I','D','A'];
+const TIPOS={
+ ACD:{n:'Actividad de Contacto con el Docente',d:'Trabajo guiado por el docente: análisis de casos, debates, resolución de problemas en clase y discusión de resultados.'},
+ APE:{n:'Actividad Práctica de Aplicación y Experimentación',d:'Aplicación práctica: simulación, laboratorio, proyecto, estudio de caso, trabajo de campo o situación profesional.'},
+ AA:{n:'Actividad de Aprendizaje Autónomo',d:'Trabajo por tu cuenta: investigación, lectura crítica, informes, preparación de debates o profundización.'}
+};
+const TIPOS_EV=[['','Selecciona…'],['documental','Documental'],['cuantitativa','Cuantitativa'],['cualitativa','Cualitativa'],['normativa','Normativa'],['observacional','Observacional'],['otra','Otra']];
+const NIVEL_FUENTE=[['','Selecciona…'],['primaria','Fuente primaria (origen del dato)'],['secundaria','Fuente secundaria (otro la comenta)'],['sintesis','Síntesis (resumen de varias)']];
+const ALTA_MEDIA=[['','Selecciona…'],['alta','Alta'],['media','Media'],['baja','Baja']];
+const CATS=[
+ {k:'hecho',n:'Hechos',s:'Hecho',d:'Lo que los datos dicen, sin añadir nada. Deben salir de tu matriz de evidencias.'},
+ {k:'inferencia',n:'Inferencias',s:'Inferencia',d:'Lo que concluyes a partir de los hechos. Es tu lectura, no el dato.'},
+ {k:'supuesto',n:'Supuestos',s:'Supuesto',d:'Lo que das por cierto sin haberlo comprobado todavía.'},
+ {k:'opinion',n:'Opiniones',s:'Opinión',d:'Valoraciones personales o de terceros. No cuentan como evidencia.'},
+ {k:'hipotesis',n:'Hipótesis',s:'Hipótesis',d:'Explicaciones posibles que conviene contrastar con más evidencia.'}
+];
+const TIPOS_VER=[['','Selecciona…'],['triangulacion','Triangulación (varias fuentes independientes)'],['primaria','Búsqueda de fuente primaria'],['fecha','Revisión de fecha'],['contexto','Revisión de contexto'],['datos','Contraste de datos'],['contradictoria','Búsqueda de evidencia contradictoria'],['otro','Otro']];
+const RESULTADOS=[['','Selecciona…'],['confirma','Confirma'],['contradice','Contradice'],['matiza','Matiza'],['noconcluyente','No es concluyente']];
+const CRIT_DEF=['Pertinencia','Viabilidad','Costo','Tiempo','Riesgo','Impacto','Sostenibilidad','Cumplimiento normativo','Calidad de la evidencia'];
+const NIVELES={1:'Inicial',2:'En desarrollo',3:'Competente',4:'Avanzado'};
+const REGLA_IA='La IA puede ampliar preguntas y proponer alternativas, pero no sustituye la verificación, la decisión ni la responsabilidad argumentativa del estudiante.';
+const DESC_DEF={
+ E:{1:'Opiniones o datos sin fuente.',2:'Evidencia parcial o poco pertinente.',3:'Evidencia pertinente, suficiente y trazable.',4:'Integra evidencia diversa, jerarquiza calidad y reconoce vacíos.'},
+ I:{1:'Confunde dato y opinión.',2:'Interpreta sin explicitar supuestos.',3:'Relaciona evidencia, inferencias y supuestos.',4:'Contrasta interpretaciones y explica límites causales y contextuales.'},
+ V:{1:'Acepta información sin contraste.',2:'Comprueba aspectos formales.',3:'Contrasta fuentes y corrige inconsistencias.',4:'Triangula, busca refutación y documenta cambios de posición.'},
+ D:{1:'Decisión intuitiva o no justificada.',2:'Usa criterios implícitos o incompletos.',3:'Compara alternativas con criterios explícitos.',4:'Integra consecuencias, incertidumbre y sensibilidad a nueva evidencia.'},
+ A:{1:'Afirmación sin soporte.',2:'Razones generales con vínculo débil.',3:'Conecta tesis, evidencia y razonamiento.',4:'Integra objeciones, límites y condiciones de revisión.'}
+};
+const AYUDA={
+ E:'Una evidencia es trazable cuando otra persona puede encontrar de dónde sale: quién lo dijo o publicó (autor o entidad), cuándo, y dónde verlo (enlace, referencia o archivo). Distingue un dato verificable de una opinión. Si tu fuente es secundaria, busca la primaria.',
+ V:'Verificar es intentar que tu evidencia falle. Rastrea la fuente original, compara con otra fuente independiente, revisa fechas y contexto, y busca datos que te contradigan. Si encuentras errores o fuentes débiles, vuelve a Evidencia: es parte del método.',
+ I:'Interpretar no es repetir datos: es decir qué significa la evidencia verificada, cómo se relaciona y qué podrías estar dando por supuesto. Separa lo que es hecho de lo que infieres. Piensa al menos en otra explicación posible y en lo que todavía no se puede concluir.',
+ D:'Decidir es elegir con razones visibles. Nombra al menos dos alternativas, define criterios para compararlas y señala qué evidencia respalda cada criterio. La tabla de puntajes ayuda a pensar, pero no decide por ti.',
+ A:'Argumentar es mostrar el camino entre la evidencia y tu decisión para que otra persona pueda revisarlo. Incluye una objeción seria y cómo la respondes, qué límites tiene tu conclusión y qué evidencia nueva la cambiaría.'
+};
+
+/* ====== Asignaturas base: SIN datos oficiales (el docente los carga). Los ejemplos son orientativos. ====== */
+const ASIG_BASE=[
+ {id:'emprendimiento',nombre:'Emprendimiento',unidades:[],
+  enfoque:'oportunidades · problemas de clientes · propuesta de valor · modelo de negocio · viabilidad · riesgos · innovación',
+  fuentes:'Entrevistas a posibles clientes, encuestas, estadísticas de organismos oficiales, informes sectoriales, observación en campo.',
+  ejemplos:{E:'Una entrevista a un posible cliente (fuente primaria) indica cuál es su problema principal. Registra quién lo dijo, cuándo y en qué contexto.',I:'Si varios clientes mencionan la misma dificultad, una inferencia posible es que el problema es relevante. Un supuesto sería que pagarían por resolverlo.',V:'Contrasta lo dicho en entrevistas con una encuesta o con datos oficiales, y busca casos de clientes que NO tengan ese problema.',D:'Compara alternativas de propuesta de valor según viabilidad, costo, riesgo e impacto, indicando qué evidencia respalda cada criterio.',A:'Defiende tu decisión: tesis, evidencia clave, razonamiento, una objeción (por ejemplo «el mercado es muy pequeño») y tu respuesta.'},
+  criterios:'Pertinencia, Viabilidad, Costo, Riesgo, Impacto, Calidad de la evidencia'},
+ {id:'comercio-exterior',nombre:'Comercio Exterior',unidades:[],
+  enfoque:'mercados · normativa · documentación · logística internacional · costos · riesgos · decisiones de importación o exportación',
+  fuentes:'Normativa y aranceles publicados por la autoridad competente, estadísticas de comercio oficiales, documentos aduaneros, informes de organismos comerciales.',
+  ejemplos:{E:'Un arancel o requisito publicado por la autoridad competente (fuente primaria), con fecha de consulta. Evita basarte solo en un blog que lo resume.',I:'Si los costos de un mercado son menores, una inferencia posible es que conviene más. Un supuesto sería que la normativa no cambiará durante la operación.',V:'Revisa la fecha de vigencia de la norma y contrasta costos con otra fuente independiente; busca restricciones que contradigan tu opción.',D:'Compara mercados o modalidades con criterios como costo, tiempo, riesgo y cumplimiento normativo.',A:'Presenta tu recomendación, la normativa y los datos que la sostienen, una objeción (por ejemplo un riesgo logístico) y tu respuesta.'},
+  criterios:'Costo, Tiempo, Riesgo, Cumplimiento normativo, Viabilidad, Calidad de la evidencia'},
+ {id:'gestion-calidad',nombre:'Gestión de la Calidad',unidades:[],
+  enfoque:'procesos · indicadores · no conformidades · causas · mejora continua · satisfacción · herramientas de calidad',
+  fuentes:'Registros del proceso, indicadores medidos, informes de auditoría, encuestas de satisfacción, normas y procedimientos documentados.',
+  ejemplos:{E:'Un registro de no conformidades del proceso (fuente primaria) con fechas y responsables. Distingue el dato registrado de la explicación que alguien da.',I:'Si las fallas aumentan tras un cambio, una hipótesis posible es que el cambio influyó. No asumas causa sin evidencia; considera otras explicaciones.',V:'Compara el indicador antes y después, con otra fuente o con otra área del proceso, y busca datos que contradigan tu hipótesis de causa.',D:'Compara acciones de mejora según impacto, costo, tiempo y riesgo, y qué evidencia respalda cada criterio.',A:'Defiende la acción elegida con datos del proceso, una objeción posible y los indicadores que seguirías para comprobar el resultado.'},
+  criterios:'Pertinencia, Impacto, Costo, Tiempo, Riesgo, Calidad de la evidencia'},
+ {id:'logistica',nombre:'Logística y Cadena de Suministro',unidades:[],
+  enfoque:'inventarios · transporte · abastecimiento · almacenamiento · niveles de servicio · costos · proveedores · sostenibilidad',
+  fuentes:'Registros de inventario y despacho, cotizaciones de proveedores, indicadores de servicio, estadísticas oficiales de transporte, observación de la operación.',
+  ejemplos:{E:'Un registro de despachos o inventario (fuente primaria) con periodo y responsable. Anota si es una estimación o un dato medido.',I:'Si hay faltantes frecuentes, una inferencia posible es que el abastecimiento falla. Un supuesto sería que la demanda se mantiene estable.',V:'Contrasta los registros con una auditoría o conteo físico y con otra fuente; busca periodos en que la situación fue distinta.',D:'Compara proveedores o políticas de inventario según costo, tiempo, riesgo, nivel de servicio y sostenibilidad.',A:'Presenta tu recomendación con datos de la operación, una objeción (por ejemplo costo de almacenamiento) y tu respuesta.'},
+  criterios:'Costo, Tiempo, Riesgo, Sostenibilidad, Impacto, Calidad de la evidencia'}
+];
+const ASIG_GENERICA={nombre:'Asignatura',enfoque:'',fuentes:'Documentos, datos, normativa u observaciones que otra persona pueda comprobar.',ejemplos:{E:'Un dato con su fuente, autor y fecha.',I:'Qué significa ese dato y qué supuestos usas.',V:'Contrasta con otra fuente independiente.',D:'Compara alternativas con criterios.',A:'Conecta evidencia, razonamiento y decisión.'},criterios:''};
+
+function uid(){return Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4)}
+const clone=o=>JSON.parse(JSON.stringify(o));
+const ahora=()=>new Date().toISOString();
+/* ====== Estado, almacenamiento local, validaciones y retroalimentación orientativa ====== */
+const KEY='evida.asistente.v1';
+let S,CUR=null,memOnly=false,tmrSave=null;
+const txt=v=>(v==null?'':String(v)).trim();
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nl=s=>esc(s).replace(/\n/g,'<br>');
+const lab=(arr,k)=>{const f=arr.find(x=>x[0]===k);return f&&k?f[1]:''};
+
+function estadoInicial(){return{v:1,rol:'estudiante',estudiante:{nombre:'',grupo:''},
+ config:{asignaturas:clone(ASIG_BASE),actividades:[],criterios:CRIT_DEF.slice(),rubrica:{pesos:{E:1,I:1,V:1,D:1,A:1},desc:clone(DESC_DEF)}},trabajos:[]}}
+function migrar(o){const d=estadoInicial();o=Object.assign(d,o);const c=o.config;
+ c.asignaturas=c.asignaturas||d.config.asignaturas;c.actividades=c.actividades||[];c.criterios=c.criterios||CRIT_DEF.slice();
+ c.rubrica=c.rubrica||d.config.rubrica;c.rubrica.pesos=Object.assign({E:1,I:1,V:1,D:1,A:1},c.rubrica.pesos);c.rubrica.desc=c.rubrica.desc||clone(DESC_DEF);
+ o.trabajos=(o.trabajos||[]).map(t=>Object.assign(nuevoTrabajo(),t));return o}
+function cargar(){try{const r=localStorage.getItem(KEY);if(r)return migrar(JSON.parse(r))}catch(e){memOnly=true}return estadoInicial()}
+function guardar(){clearTimeout(tmrSave);tmrSave=setTimeout(guardarYa,250)}
+function guardarYa(){try{localStorage.setItem(KEY,JSON.stringify(S));marcaGuardado(true)}catch(e){memOnly=true;marcaGuardado(false)}}
+function marcaGuardado(ok){const el=document.getElementById('savestat');if(!el)return;const h=new Date().toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'});
+ el.textContent=ok?`Guardado en este navegador · ${h}`:'No se pudo guardar en el navegador: exporta una copia (Portafolio › Copia de seguridad)'}
+
+function nuevoTrabajo(){return{id:uid(),creado:ahora(),actualizado:ahora(),estado:'borrador',estudiante:'',demo:false,
+ ctx:{asignaturaId:'',unidad:'',tema:'',tipo:'',actividadId:'',titulo:'',problema:'',ra:'',entregable:'',fecha:'',participacion:'individual',integrantes:'',indicaciones:'',contextoPractico:'',plan:''},
+ E:{items:[],vacios:''},
+ I:{significado:'',relaciones:'',items:[],alternativas:[],sinAlt:false,justAlt:'',noConcluir:''},
+ V:{items:[]},
+ D:{alternativas:[],criterios:[],puntajes:{},riesgos:'',decision:'',confianza:'',incertidumbres:'',provisional:false},
+ A:{tesis:'',evidenciaIds:[],evidenciaClave:'',razonamiento:'',criterios:'',objecion:'',respuesta:'',limitaciones:'',nuevaEvidencia:''},
+ IA:{uso:'',entries:[]},
+ comp:{aportes:[],cierre:'',productos:[],observaciones:[],prueba:'',decisionAplicada:'',resultados:'',fuentes:[],bitacora:[],metacognicion:'',autoeval:{E:'',I:'',V:'',D:'',A:''},autoevalTxt:''},
+ historial:[],feedback:{E:'',I:'',V:'',D:'',A:'',general:''},rubricaDoc:{E:'',I:'',V:'',D:'',A:'',comentario:'',revisado:false}}}
+
+/* ---- búsqueda de datos configurados ---- */
+const asigDe=id=>S.config.asignaturas.find(a=>a.id===id);
+const subj=w=>Object.assign({},ASIG_GENERICA,asigDe(w.ctx.asignaturaId)||{});
+const actDe=w=>S.config.actividades.find(a=>a.id===w.ctx.actividadId);
+function pesosDe(w){const a=w&&actDe(w);const p=Object.assign({},S.config.rubrica.pesos);if(a&&a.pesos)Object.keys(a.pesos).forEach(k=>{if(a.pesos[k]!==''&&a.pesos[k]!=null)p[k]=+a.pesos[k]});return p}
+function puntaje20(sc,p){let num=0,den=0;['E','V','I','D','A'].forEach(k=>{const v=+sc[k];if(v>=1&&v<=4){num+=v*(+p[k]||0);den+=4*(+p[k]||0)}});return den?Math.round(num/den*200)/10:null}
+const todasDims=sc=>['E','V','I','D','A'].every(k=>+sc[k]>=1&&+sc[k]<=4);
+
+/* ---- reglas de trazabilidad ---- */
+const RX_IA=/(^|[^a-záéíóúñ])(chat\s?-?gpt|gpt-?\d?|gemini|copilot|claude|deepseek|perplexity|llama|bard|grok|mistral|inteligencia artificial|ia generativa|ia)(?![a-záéíóúñ])/i;
+const fuenteEsIA=t=>RX_IA.test(txt(t));
+const RX_CAUSAL=/(^|[^a-záéíóúñ])(porque|causa|causas|causó|causan|provoca|provocan|provocó|debido a|se debe a|produce|producen|genera|generan|ocasiona|ocasionan|origina|originan|por lo tanto|por eso|a causa de|resultado de|efecto de)(?![a-záéíóúñ])/i;
+function faltasEv(x){const f=[];if(!txt(x.afirmacion))f.push('la afirmación o dato');
+ if(!txt(x.fuente))f.push('la fuente o procedencia');else if(fuenteEsIA(x.fuente))f.push('una fuente comprobable (una herramienta de IA no es una fuente)');
+ if(!txt(x.autor)&&!txt(x.enlace))f.push('autor/entidad o enlace/referencia');
+ if(x.viaIA&&!txt(x.enlace))f.push('el enlace o referencia donde comprobaste lo que dijo la IA');return f}
+const esTrazable=x=>x.cat!=='opinion'&&!faltasEv(x).length;
+const admisibles=w=>{const a=actDe(w);return a&&a.admisibles&&a.admisibles.length?a.admisibles:null};
+const evN=(w,id)=>{const i=w.E.items.findIndex(x=>x.id===id);return i<0?'?':'E'+(i+1)};
+
+/* ---- validaciones por fase: {ok, err:[bloqueos], warn:[alertas]} ---- */
+function vCtx(w){const c=w.ctx,err=[];
+ if(!c.asignaturaId)err.push('Selecciona la asignatura.');if(!c.tipo)err.push('Selecciona el tipo de actividad (ACD, APE o AA).');
+ if(!txt(c.titulo))err.push('Escribe el título de la actividad.');if(!txt(c.problema))err.push('Describe el problema, caso, reto o pregunta.');
+ return{ok:!err.length,err,warn:[]}}
+function vE(w){const it=w.E.items.filter(x=>txt(x.afirmacion)||txt(x.fuente)),err=[],warn=[];
+ if(!it.some(esTrazable))err.push('Registra al menos una evidencia trazable: un dato verificable con fuente identificable (fuente, y autor o enlace).');
+ const sinF=it.filter(x=>txt(x.afirmacion)&&!txt(x.fuente));
+ if(sinF.length)warn.push(`${sinF.length} afirmación(es) sin fuente: ${sinF.map(x=>evN(w,x.id)).join(', ')}. Sin fuente, una afirmación no es evidencia.`);
+ const ia=it.filter(x=>txt(x.fuente)&&fuenteEsIA(x.fuente));
+ if(ia.length)warn.push(`${ia.map(x=>evN(w,x.id)).join(', ')}: una herramienta de IA no es una fuente. Úsala para buscar, pero registra el documento, dato o autor real que comprobaste.`);
+ const via=it.filter(x=>x.viaIA&&!txt(x.enlace));
+ if(via.length)warn.push(`${via.map(x=>evN(w,x.id)).join(', ')}: lo que dijo una IA no puede quedar como evidencia final; enlázalo a una fuente que puedas comprobar.`);
+ const sec=it.filter(x=>x.cat!=='opinion'&&txt(x.afirmacion)&&(x.nivel==='secundaria'||x.nivel==='sintesis'));
+ if(sec.length)warn.push(`Recomendación: ${sec.map(x=>evN(w,x.id)).join(', ')} proviene de fuente secundaria o síntesis. Busca la fuente primaria (el documento, dato u organismo original).`);
+ const op=it.filter(x=>x.cat==='opinion'&&txt(x.afirmacion));
+ if(op.length)warn.push(`${op.map(x=>evN(w,x.id)).join(', ')} está marcado como opinión: se conserva, pero no cuenta como evidencia verificable.`);
+ const ad=admisibles(w);if(ad){const mal=it.filter(x=>x.tipo&&!ad.includes(x.tipo));if(mal.length)warn.push(`${mal.map(x=>evN(w,x.id)).join(', ')}: el tipo de evidencia no está entre los admitidos por tu docente (${ad.join(', ')}).`)}
+ if(it.some(esTrazable)&&!it.some(x=>txt(x.vacios))&&!txt(w.E.vacios))warn.push('No has señalado vacíos de información. Casi siempre falta algo: ¿qué te gustaría saber y no tienes?');
+ return{ok:!err.length,err,warn}}
+function vI(w){const I=w.I,err=[],warn=[];
+ if(!txt(I.significado))err.push('Explica con tus palabras qué significa la evidencia.');
+ if(!I.items.some(x=>(x.cat==='inferencia'||x.cat==='hipotesis')&&txt(x.texto)))err.push('Formula al menos una inferencia o una hipótesis propia.');
+ if(!I.alternativas.some(a=>txt(a.texto))&&!(I.sinAlt&&txt(I.justAlt)))err.push('Escribe al menos una interpretación alternativa, o marca «no aplica» y explica por qué.');
+ if(!txt(I.noConcluir))err.push('Indica qué no se puede concluir todavía.');
+ const cau=I.items.filter(x=>['inferencia','hipotesis','hecho'].includes(x.cat)&&RX_CAUSAL.test(txt(x.texto))&&!(x.ev&&x.ev.length));
+ cau.forEach(x=>warn.push(`Posible causalidad sin evidencia vinculada: «${txt(x.texto).slice(0,70)}…». Una relación de causa necesita evidencia que la respalde; vincula evidencias o reformula como hipótesis.`));
+ if(!txt(I.relaciones))warn.push('Describe qué relación existe entre los datos. Interpretar no es repetir datos.');
+ if(!I.items.some(x=>x.cat==='supuesto'&&txt(x.texto)))warn.push('No declaraste supuestos. Siempre damos algo por cierto: ¿qué estás asumiendo?');
+ if(I.items.length&&I.items.every(x=>x.cat==='hecho'||!txt(x.texto)))warn.push('Solo registraste hechos: eso es repetir datos. Añade qué significan (inferencias).');
+ return{ok:!err.length,err,warn}}
+const vVok=x=>txt(x.afirmacion)&&x.tipo&&x.resultado&&txt(x.como)&&txt(x.contraste)&&!fuenteEsIA(x.contraste);
+function vV(w){const it=w.V.items,err=[],warn=[];
+ if(!it.some(vVok))err.push('Registra al menos una verificación completa: qué verificaste, con qué contrastaste, cómo lo hiciste y qué resultó.');
+ it.filter(x=>txt(x.contraste)&&fuenteEsIA(x.contraste)).forEach(x=>warn.push('Una respuesta de IA no sirve como fuente de contraste. Rastrea la fuente real que la IA menciona y regístrala.'));
+ const sinV=w.E.items.filter(e=>e.relevancia==='alta'&&txt(e.afirmacion)&&!it.some(v=>v.ref===e.id&&vVok(v)));
+ if(sinV.length)warn.push(`Evidencia de relevancia alta sin verificación documentada: ${sinV.map(e=>evN(w,e.id)).join(', ')}. Explica cómo verificaste la información importante.`);
+ const rev=it.filter(x=>x.resultado==='contradice'||x.resultado==='matiza');
+ rev.filter(x=>!txt(x.correccion)).forEach(x=>warn.push(`Una verificación «${lab(RESULTADOS,x.resultado).toLowerCase()}» pero no registraste corrección o cambio. ¿Qué cambiaste en tu evidencia?`));
+ const debil=w.E.items.some(e=>e.confiabilidad==='baja'&&txt(e.afirmacion));
+ return{ok:!err.length,err,warn,sinV,revisar:rev.length>0||it.some(x=>x.resultado==='noconcluyente')||debil,motivoRevisar:[rev.length?'una verificación contradice o matiza tu evidencia':'',it.some(x=>x.resultado==='noconcluyente')?'hay verificaciones no concluyentes':'',debil?'registraste una fuente de confiabilidad baja':''].filter(Boolean)}}
+const critsOn=w=>w.D.criterios.filter(c=>c.on&&txt(c.nombre));
+const altsOk=w=>w.D.alternativas.filter(a=>txt(a.nombre));
+function vD(w){const D=w.D,err=[],warn=[];
+ if(altsOk(w).length<2)err.push('Considera al menos dos alternativas y ponles nombre.');
+ if(critsOn(w).length<2)err.push('Selecciona al menos dos criterios para comparar las alternativas.');
+ if(!txt(D.riesgos))err.push('Describe los riesgos y consecuencias.');
+ if(!txt(D.decision))err.push('Escribe tu decisión, solución, recomendación o conclusión.');
+ if(!D.confianza)err.push('Indica tu nivel de confianza: bajo, medio o alto.');
+ if(!txt(D.incertidumbres))err.push('Declara qué incertidumbres permanecen.');
+ const sinEv=critsOn(w).filter(c=>!txt(c.evidencia));if(sinEv.length)warn.push(`Criterios sin evidencia que los respalde: ${sinEv.map(c=>c.nombre).join(', ')}.`);
+ const falta=altsOk(w).length*critsOn(w).length-altsOk(w).reduce((n,a)=>n+critsOn(w).filter(c=>+D.puntajes[a.id+'|'+c.id]>0).length,0);
+ if(falta>0)warn.push(`Faltan ${falta} casilla(s) de la matriz sin valorar.`);
+ const vv=vV(w);if(D.confianza==='alto'&&(vv.revisar||vv.warn.length))warn.push('Indicas confianza alta, pero tu verificación tiene contradicciones, matices o pendientes. Revisa si tu confianza es proporcional a la evidencia.');
+ return{ok:!err.length,err,warn}}
+const A_CAMPOS=[['tesis','la tesis o decisión principal'],['evidenciaClave','la evidencia clave'],['razonamiento','el razonamiento que une evidencia y decisión'],['criterios','los criterios utilizados'],['objecion','una objeción o contraargumento'],['respuesta','la respuesta a la objeción'],['limitaciones','las limitaciones'],['nuevaEvidencia','qué nueva evidencia podría cambiar tu decisión']];
+function vA(w){const err=[];A_CAMPOS.forEach(([k,n])=>{if(!txt(w.A[k]))err.push(`Falta ${n}.`)});return{ok:!err.length,err,warn:[]}}
+const IA_CAMPOS=[['herramienta','herramienta utilizada'],['finalidad','finalidad de uso'],['instrucciones','resumen de instrucciones dadas'],['verificado','contenido verificado externamente'],['descartado','contenido descartado o corregido'],['aporte','aporte intelectual propio']];
+const iaFalta=e=>IA_CAMPOS.filter(([k])=>!txt(e[k])).map(x=>x[1]);
+function vIA(w){const IA=w.IA,err=[];
+ if(!IA.uso)err.push('Indica si usaste o no inteligencia artificial en esta actividad.');
+ if(IA.uso==='si'){if(!IA.entries.length)err.push('Registra al menos una herramienta de IA utilizada.');IA.entries.forEach((e,i)=>{const f=iaFalta(e);if(f.length)err.push(`Declaración de IA n.º ${i+1} incompleta: falta ${f.join(', ')}.`)})}
+ return{ok:!err.length,err,warn:[]}}
+function vComp(w){const c=w.comp,t=w.ctx.tipo,err=[],warn=[];
+ if(t==='ACD'){if(!txt(c.cierre))err.push('Escribe el cierre reflexivo.');if(!c.aportes.some(a=>txt(a.texto)))warn.push('Aún no registraste aportes de la discusión.')}
+ else if(t==='APE'){if(!c.observaciones.some(a=>txt(a.texto)))err.push('Registra al menos una observación.');if(!txt(c.prueba))err.push('Describe la prueba o contraste de la solución.');if(!txt(c.decisionAplicada))err.push('Describe la decisión aplicada.');if(!txt(c.resultados))err.push('Registra la evidencia de resultados.');if(!c.productos.some(a=>txt(a.texto)))warn.push('Aún no registraste productos o evidencias generadas.')}
+ else if(t==='AA'){if(!c.fuentes.some(a=>txt(a.texto)))err.push('Registra al menos una fuente consultada.');if(!c.bitacora.some(a=>txt(a.texto)))err.push('Registra al menos una entrada en la bitácora de avance.');if(!txt(c.metacognicion))err.push('Escribe tu reflexión metacognitiva.');if(!todasDims(c.autoeval))err.push('Completa la autoevaluación con la rúbrica EVIDA (las cinco dimensiones).')}
+ else err.push('Selecciona el tipo de actividad en el contexto.');
+ return{ok:!err.length,err,warn}}
+const NOMBRE_PASO={ctx:'Contexto',E:'Evidencia',I:'Interpretación',V:'Verificación',D:'Decisión',A:'Argumentación',comp:'Registro de la actividad',IA:'Uso de IA',informe:'Informe'};
+function estado(w){const r={ctx:vCtx(w),E:vE(w),I:vI(w),V:vV(w),D:vD(w),A:vA(w),comp:vComp(w),IA:vIA(w)};
+ const ks=Object.keys(r),n=ks.filter(k=>r[k].ok).length;r.pct=Math.round(n/ks.length*100);r.completo=n===ks.length;
+ r.fase=ORDEN.find(k=>!r[k].ok)||(!r.comp.ok?'comp':!r.IA.ok?'IA':'informe');
+ r.txt=w.estado==='finalizado'?'Terminada':(w.E.items.some(x=>txt(x.afirmacion))?'En proceso':'Pendiente');
+ return r}
+/* alertas del panel */
+function alertas(w,st){const a=[];
+ const sinF=w.E.items.some(x=>txt(x.afirmacion)&&!txt(x.fuente));
+ if(sinF||(w.ctx.titulo&&!w.E.items.some(esTrazable)&&st.ctx.ok&&w.E.items.length))a.push('Falta de fuentes');
+ if(st.E.ok&&!st.V.ok)a.push('Falta de verificación');
+ if(st.V.ok&&!st.D.ok)a.push('Falta de decisión');
+ if(st.A.ok||w.IA.uso==='si'){if(!st.IA.ok)a.push('Declaración de IA incompleta')}
+ return a}
+
+/* ---- retroalimentación automática ORIENTATIVA (no es evaluación) ---- */
+function retro(w){const R={},E=w.E.items.filter(x=>txt(x.afirmacion)),tr=E.filter(esTrazable);
+ function nivel(conds,msgs){let n=0;for(const c of conds){if(c)n++;else break}return{nivel:Math.max(1,n),msgs}}
+ // E
+ {const m=[];const c1=tr.length>=1,c2=tr.length>=3||new Set(tr.map(x=>x.tipo).filter(Boolean)).size>=2,c3=tr.some(x=>x.nivel==='primaria'),c4=tr.every(x=>txt(x.fecha)&&txt(x.autor)&&(txt(x.enlace)))&&(E.some(x=>txt(x.vacios))||txt(w.E.vacios));
+  if(!c1)m.push('Registra al menos una evidencia con fuente identificable.');else{if(!c2)m.push('Amplía la base: más de una evidencia o más de un tipo de evidencia.');if(!c3)m.push('Incluye al menos una fuente primaria.');if(!c4)m.push('Completa autor, fecha y enlace en todas las evidencias y señala vacíos de información.')}
+  R.E=nivel([c1,c2,c3,c4],m)}
+ // I
+ {const I=w.I,m=[];const c1=txt(I.significado)&&I.items.some(x=>(x.cat==='inferencia'||x.cat==='hipotesis')&&txt(x.texto));
+  const c2=I.items.some(x=>x.cat==='supuesto'&&txt(x.texto))&&new Set(I.items.filter(x=>txt(x.texto)).map(x=>x.cat)).size>=3;
+  const c3=I.alternativas.some(a=>txt(a.texto));const c4=txt(I.noConcluir)&&!vI(w).warn.some(x=>x.startsWith('Posible causalidad'));
+  if(!c1)m.push('Explica qué significa la evidencia y formula inferencias.');else{if(!c2)m.push('Declara supuestos y separa mejor hechos, inferencias y supuestos.');if(!c3)m.push('Formula una explicación alternativa.');if(!c4)m.push('Indica lo que no se puede concluir y respalda las relaciones de causa con evidencia.')}
+  R.I=nivel([c1,c2,c3,c4],m)}
+ // V
+ {const V=w.V.items.filter(vVok),m=[];const c1=V.length>=1,c2=V.length>=2&&new Set(V.map(x=>x.tipo)).size>=2;
+  const c3=V.some(x=>x.tipo==='contradictoria'||x.tipo==='primaria'||x.tipo==='triangulacion');
+  const c4=!vV(w).sinV.length&&(V.some(x=>txt(x.correccion))||w.historial.length>0);
+  if(!c1)m.push('Documenta al menos una verificación completa.');else{if(!c2)m.push('Usa más de un tipo de verificación.');if(!c3)m.push('Busca la fuente primaria, triangula o busca evidencia contradictoria.');if(!c4)m.push('Verifica la evidencia de relevancia alta y documenta correcciones o cambios de posición.')}
+  R.V=nivel([c1,c2,c3,c4],m)}
+ // D
+ {const D=w.D,m=[];const c1=altsOk(w).length>=2&&txt(D.decision);const cs=critsOn(w);
+  const c2=cs.length>=3&&altsOk(w).every(a=>cs.every(c=>+D.puntajes[a.id+'|'+c.id]>0));
+  const c3=cs.every(c=>txt(c.evidencia))&&txt(D.riesgos);const c4=D.confianza&&txt(D.incertidumbres)&&!vD(w).warn.some(x=>x.startsWith('Indicas confianza alta'));
+  if(!c1)m.push('Compara al menos dos alternativas y escribe tu decisión.');else{if(!c2)m.push('Usa tres o más criterios y valora todas las casillas.');if(!c3)m.push('Respalda cada criterio con evidencia y describe riesgos.');if(!c4)m.push('Declara confianza e incertidumbres de forma proporcional a tu verificación.')}
+  R.D=nivel([c1,c2,c3,c4],m)}
+ // A
+ {const A=w.A,m=[];const c1=txt(A.tesis)&&txt(A.razonamiento);const c2=txt(A.evidenciaClave)&&txt(A.criterios);const c3=txt(A.objecion)&&txt(A.respuesta);const c4=txt(A.limitaciones)&&txt(A.nuevaEvidencia);
+  if(!c1)m.push('Formula la tesis y el razonamiento.');else{if(!c2)m.push('Señala la evidencia clave y los criterios usados.');if(!c3)m.push('Incluye una objeción y respóndela.');if(!c4)m.push('Reconoce limitaciones e indica qué evidencia nueva cambiaría tu decisión.')}
+  R.A=nivel([c1,c2,c3,c4],m)}
+ const sc={};['E','V','I','D','A'].forEach(k=>sc[k]=R[k].nivel);R.total=puntaje20(sc,{E:1,I:1,V:1,D:1,A:1});return R}
+/* ====== Construcción de interfaz, eventos, modales y enrutador ====== */
+let FID=0,LIVE=null,SHOWERR=false;
+const $=(s,r)=>(r||document).querySelector(s);
+const getp=(o,p)=>p.split('.').reduce((a,k)=>a==null?undefined:a[k],o);
+function setp(o,p,v){const ks=p.split('.');let a=o;for(let i=0;i<ks.length-1;i++){if(a[ks[i]]==null)a[ks[i]]={};a=a[ks[i]]}a[ks[ks.length-1]]=v}
+const rootOf=k=>k==='w'?CUR:k==='c'?S.config:k==='s'?S:null;
+function bv(b){const i=b.indexOf(':');const r=rootOf(b.slice(0,i));return r?getp(r,b.slice(i+1)):undefined}
+
+/* ---- campos ---- */
+function F(bind,label,o){o=o||{};const v=bv(bind),id='f'+(++FID),t=o.type||'text';const rr=o.rr?' data-rr="1"':'';const dn=o.num?' data-num="1"':'';
+ const req=o.req?'<span class="req" aria-hidden="true"> *</span>':'';const hid=o.help?` aria-describedby="${id}h"`:'';let c;
+ if(t==='textarea')c=`<textarea id="${id}" data-bind="${bind}" rows="${o.rows||3}" placeholder="${esc(o.ph||'')}"${hid}>${esc(v==null?'':v)}</textarea>`;
+ else if(t==='select')c=`<select id="${id}" data-bind="${bind}"${rr}${dn}${hid}>${o.opts.map(x=>`<option value="${esc(x[0])}"${String(v==null?'':v)===String(x[0])?' selected':''}>${esc(x[1])}</option>`).join('')}</select>`;
+ else c=`<input id="${id}" type="${t}" data-bind="${bind}" value="${esc(v==null?'':v)}" placeholder="${esc(o.ph||'')}"${o.min!=null?` min="${o.min}"`:''}${o.max!=null?` max="${o.max}"`:''}${o.list?` list="${o.list}"`:''}${rr}${hid}>`;
+ return `<div class="field ${o.cls||''}"><label for="${id}">${esc(label)}${req}</label>${c}${o.help?`<p class="hint" id="${id}h">${esc(o.help)}</p>`:''}</div>`}
+function R(bind,legend,opts,o){o=o||{};const v=bv(bind),nm='r'+(++FID);const rr=o.rr?' data-rr="1"':'';
+ return `<fieldset class="field"><legend>${esc(legend)}</legend><div class="radios">${opts.map(x=>`<label><input type="radio" name="${nm}" data-bind="${bind}" value="${esc(x[0])}"${v===x[0]?' checked':''}${rr}> ${esc(x[1])}</label>`).join('')}</div></fieldset>`}
+function CK(bind,label,o){o=o||{};return `<label class="check"><input type="checkbox" data-bind="${bind}"${bv(bind)?' checked':''}${o.rr?' data-rr="1"':''}> <span>${esc(label)}</span></label>`}
+function refsBox(arrPath,sel){const items=CUR.E.items.filter(x=>txt(x.afirmacion));if(!items.length)return '<p class="hint">Aún no hay evidencias registradas en la fase E.</p>';
+ return `<div class="refs" role="group" aria-label="Evidencias vinculadas">${items.map(x=>`<label title="${esc(txt(x.afirmacion).slice(0,90))}"><input type="checkbox" data-arr="${arrPath}" data-val="${x.id}"${(sel||[]).includes(x.id)?' checked':''}> ${evN(CUR,x.id)}</label>`).join('')}</div>`}
+
+/* ---- eventos delegados ---- */
+const ACT={},CHG={},HOOK=[];
+function onInput(e){const t=e.target;if(!t.dataset)return;
+ if(t.dataset.chg&&e.type==='change'){CHG[t.dataset.chg](t.value,t,e);return}
+ let root,path,rk;
+ if(t.dataset.arr){const b=t.dataset.arr,i=b.indexOf(':');rk=b.slice(0,i);path=b.slice(i+1);root=rootOf(rk);if(!root)return;let a=getp(root,path);if(!Array.isArray(a)){a=[];setp(root,path,a)}
+  const id=t.dataset.val,ix=a.indexOf(id);if(t.checked&&ix<0)a.push(id);if(!t.checked&&ix>=0)a.splice(ix,1)}
+ else if(t.dataset.lines){const b=t.dataset.lines,i=b.indexOf(':');rk=b.slice(0,i);path=b.slice(i+1);root=rootOf(rk);if(!root)return;setp(root,path,t.value.split('\n').map(x=>x.trim()).filter(Boolean))}
+ else if(t.dataset.bind){const b=t.dataset.bind,i=b.indexOf(':');rk=b.slice(0,i);path=b.slice(i+1);root=rootOf(rk);if(!root)return;
+  let v;if(t.type==='checkbox')v=t.checked;else if(t.type==='number'||t.dataset.num)v=t.value===''?'':+t.value;else v=t.value;setp(root,path,v)}
+ else return;
+ if(rk==='w'&&CUR){if(CUR.estado==='finalizado'&&!/^(feedback|rubricaDoc)/.test(path))CUR.estado='borrador';CUR.actualizado=ahora()}
+ guardar();
+ for(const h of HOOK){if(h(rk,path,t))return}
+ if(t.dataset.rr)rerender();else live()}
+document.addEventListener('input',onInput);document.addEventListener('change',onInput);
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const f=ACT[b.dataset.act];if(f){e.preventDefault();f(b.dataset.a,b.dataset.b,b)}});
+function live(){const t=$('#worktop');if(t&&CUR)t.innerHTML=topInner(CUR);if(LIVE)LIVE()}
+function rerender(){const y=window.scrollY;render(true);window.scrollTo(0,y)}
+function nav(p){if(location.hash==='#/'+p)render();else location.hash='#/'+p}
+function toast(m){const d=document.createElement('div');d.className='toast';d.setAttribute('role','status');d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
+function modal(titulo,html,botones){const d=document.createElement('div');d.className='mback';
+ d.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt"><h2 id="mt">${titulo}</h2><div>${html}</div><div class="row mt" style="justify-content:flex-end">${botones.map((b,i)=>`<button class="btn ${b.cls||''}" data-mb="${i}">${b.t}</button>`).join('')}</div></div>`;
+ document.body.appendChild(d);const prev=document.activeElement;const close=()=>{d.remove();if(prev&&prev.focus)prev.focus()};
+ d.addEventListener('click',e=>{const b=e.target.closest('[data-mb]');if(b){const bt=botones[+b.dataset.mb];const r=bt.fn?bt.fn(d):undefined;if(r!==false)close()}else if(e.target===d)close()});
+ d.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+ (d.querySelector('textarea,input,select')||d.querySelector('[data-mb]')).focus();return d}
+function confirmar(titulo,msg,fn,okTxt,cls){modal(titulo,`<p>${msg}</p>`,[{t:'Cancelar'},{t:okTxt||'Aceptar',cls:cls||'pri',fn}])}
+function descargar(nombre,contenido,mime){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([contenido],{type:mime||'text/plain'}));a.download=nombre;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+const fechaCorta=iso=>{try{return new Date(iso).toLocaleDateString('es-EC',{day:'2-digit',month:'short',year:'numeric'})}catch(e){return ''}};
+
+/* ---- bloques comunes ---- */
+function phaseHead(k){const f=FASES.find(x=>x.k===k);return `<div class="phase ${k}"><div class="big" aria-hidden="true">${k}</div><div><h2>${k} — ${f.n}</h2><p><b>${f.q}</b> ${f.d}</p><p class="hint" style="color:inherit;opacity:.85">Producto de esta fase: ${f.prod}</p></div></div>`}
+function plainHead(cls,ch,t,d){return `<div class="phase ${cls}"><div class="big" aria-hidden="true">${ch}</div><div><h2>${t}</h2><p>${d}</p></div></div>`}
+function ayudaBox(k,w){const sj=subj(w);return `<details class="help"><summary>Ayuda breve y ejemplo</summary><p>${AYUDA[k]}</p>${sj.ejemplos&&sj.ejemplos[k]?`<div class="ex"><b>Ejemplo orientativo, no actividad oficial${sj.nombre&&w.ctx.asignaturaId?' ('+esc(sj.nombre)+')':''}:</b> ${esc(sj.ejemplos[k])}</div>`:''}${k==='E'&&sj.fuentes?`<p class="hint mt">Fuentes que suelen servir en esta asignatura: ${esc(sj.fuentes)}</p>`:''}</details>`}
+function fbBox(w,k){return txt(w.feedback[k])?`<div class="fb"><b>Retroalimentación de tu docente — ${k==='general'?'general':'fase '+k}</b><p>${nl(w.feedback[k])}</p></div>`:''}
+function alertBox(v,showErr){let h='';
+ if(v.err.length)h+=`<div class="callout ${showErr?'err':'info'}" role="${showErr?'alert':'status'}"><b class="t">${showErr?'Aún no puedes avanzar. Falta:':'Para avanzar necesitas:'}</b><ul>${v.err.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;
+ else h+=`<div class="callout ok" role="status"><b class="t">Esta fase cumple los mínimos para avanzar.</b></div>`;
+ if(v.warn.length)h+=`<div class="callout warn" role="status"><b class="t">Alertas para mejorar tu trabajo</b><ul>${v.warn.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;return h}
+function navBtns(prev,next,nextTxt){return `<div class="row sp mt noprint"><div class="row">${prev?`<button class="btn" data-act="go" data-a="${prev}">← ${NOMBRE_PASO[prev]}</button>`:''}<button class="btn" data-act="salir">Guardar y salir</button></div>${next?`<button class="btn pri" data-act="sig" data-a="${next}">${nextTxt||NOMBRE_PASO[next]} →</button>`:''}</div>`}
+
+/* ---- barra superior del trabajo (progreso y pasos) ---- */
+function puedeIr(w,p,st){if(p==='ctx')return true;if(ORDEN.includes(p)){for(const k of ORDEN){if(k===p)return true;if(!st[k].ok)return false}}return st.ctx.ok}
+function topInner(w){const st=estado(w),paso=(ruta()[2]||'ctx'),sj=asigDe(w.ctx.asignaturaId);
+ const step=(k,ch,lab,cls)=>{const ok=puedeIr(w,k,st),cur=paso===k,done=(st[k]&&st[k].ok);
+  return `<li><button class="step ${cls||k} ${done?'done':''}" data-act="go" data-a="${k}" ${cur?'aria-current="step"':''} ${ok?'':'disabled'}><span class="bd" aria-hidden="true">${ch}</span><span class="lb">${lab}${done?'<span class="sr"> (completa)</span>':''}${ok?'':'<span class="sr"> (bloqueada: completa la fase anterior)</span>'}</span></button></li>`};
+ const ar='<li aria-hidden="true"><span class="arrow">→</span></li>';
+ return `<div class="row sp"><div><h1>${esc(w.ctx.titulo||'Actividad sin título')}</h1><div class="meta">${sj?esc(sj.nombre)+' · ':''}${w.ctx.tipo||'Tipo sin elegir'} · Estado: ${st.txt}${w.demo?' · <b>EJEMPLO ORIENTATIVO</b>':''}</div></div>
+  <div class="row" style="min-width:220px;flex:1;max-width:360px"><div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${st.pct}" aria-label="Avance de la actividad"><i style="width:${st.pct}%"></i></div><b>${st.pct}%</b></div></div>
+  <nav aria-label="Fases EVIDA"><ol class="steps">${step('ctx','0','Contexto','x')}${ar}${step('E','E','Evidencia')}${ar}${step('V','V','Verificación')}<li><span class="cycle" title="Si la verificación revela errores, vuelve a Evidencia" aria-label="ciclo: se puede volver a Evidencia">↺</span></li>${ar}${step('I','I','Interpretación')}${ar}${step('D','D','Decisión')}${ar}${step('A','A','Argumentación')}<li class="sepbar" aria-hidden="true"></li>${step('comp','✎','Registro '+(w.ctx.tipo||''),'x')}${step('IA','IA','Uso de IA','x')}${step('informe','▤','Informe','x')}</ol></nav>`}
+
+/* ---- cabecera general ---- */
+function headerHTML(p){const doc=S.rol==='docente';
+ const items=doc?[['docente/asignaturas','Asignaturas'],['docente/actividades','Actividades'],['docente/rubrica','Rúbrica y criterios'],['docente/portafolios','Portafolios de estudiantes'],['docente/datos','Datos'],['ayuda','Ayuda']]:[['panel','Mi panel'],['nueva','Nueva actividad'],['portafolio','Mi portafolio'],['ayuda','Ayuda']];
+ const cur=(k)=>{const a=p.join('/');return a===k||(k==='panel'&&p[0]==='trabajo')||(k==='docente/portafolios'&&p[1]==='revision')||(k==='docente/actividades'&&p[1]==='actividades')?' aria-current="page"':''};
+ return `<a class="skip" href="#main">Saltar al contenido</a><header class="top"><div class="wrap"><a class="brand" href="#/${doc?'docente/asignaturas':'panel'}"><span class="brand-letters" aria-hidden="true"><i style="background:var(--e)">E</i><i style="background:var(--i)">I</i><i style="background:var(--v)">V</i><i style="background:var(--d)">D</i><i style="background:var(--a)">A</i></span><b>Asistente Académico EVIDA</b></a>
+ <nav class="nav" aria-label="Principal">${items.map(([k,l])=>`<a href="#/${k}"${cur(k)}>${l}</a>`).join('')}</nav>
+ <div class="rol" role="group" aria-label="Rol"><button data-act="rol" data-a="estudiante" aria-pressed="${!doc}">Estudiante</button><button data-act="rol" data-a="docente" aria-pressed="${doc}">Docente</button></div></div>
+ <div class="wrap"><div class="savestat" id="savestat">${memOnly?'Sin almacenamiento del navegador: exporta una copia para no perder tu trabajo':'Los datos se guardan automáticamente en este navegador'}</div></div></header>`}
+function footHTML(){return `<footer class="foot wrap"><p><b>EVIDA</b> (Evidencia · Interpretación · Verificación · Decisión · Argumentación) es una propuesta didáctica transversal, iterativa y orientada al razonamiento crítico, la toma de decisiones fundamentada y el uso responsable de IA. Se presenta como propuesta metodológica pendiente de validación empírica (Documento Fundacional v1.0, 2026; autor de la propuesta: Ing. Edison Oswaldo Toapanta Mendoza, MAE). Esta herramienta ofrece retroalimentación orientativa y <b>no sustituye la evaluación docente</b>.</p></footer>`}
+const reglaIA=()=>`<div class="iarule noprint" role="note"><div class="wrap"><b>Regla EVIDA-IA</b><span>${REGLA_IA}</span></div></div>`;
+
+/* ---- enrutador ---- */
+const ruta=()=>(location.hash||'#/panel').replace(/^#\//,'').split('/');
+function limpiarVacios(keep){S.trabajos=S.trabajos.filter(t=>t.id===keep||t.demo||txt(t.ctx.titulo)||txt(t.ctx.problema)||t.E.items.some(x=>txt(x.afirmacion)))}
+function render(soft){const p=ruta();FID=0;LIVE=null;if(!soft)SHOWERR=false;CUR=null;
+ const app=$('#app');let body='';
+ if(p[0]==='trabajo'||(p[0]==='docente'&&p[1]==='revision')){const id=p[0]==='trabajo'?p[1]:p[2];CUR=S.trabajos.find(t=>t.id===id)||null;if(!CUR){location.hash='#/panel';return}
+  if(p[0]==='trabajo'&&S.rol==='docente'){S.rol='estudiante'}}
+ else if(p[0]!=='nueva')limpiarVacios(null);
+ if(p[0]==='docente'&&S.rol!=='docente'){S.rol='docente'}
+ if(p[0]==='panel'&&S.rol==='docente'&&!soft){S.rol='estudiante'}
+ try{body=vista(p)}catch(err){console.error(err);body=`<div class="callout err"><b class="t">Ocurrió un error al mostrar esta pantalla</b>${esc(err.message)}. Tus datos siguen guardados.</div>`}
+ app.innerHTML=headerHTML(p)+`<main id="main" class="wrap" tabindex="-1">${body}</main>${footHTML()}${CUR&&p[0]==='trabajo'?reglaIA():''}`;
+ if(LIVE)LIVE();if(!soft){window.scrollTo(0,0);document.title='Asistente Académico EVIDA'}guardar()}
+window.addEventListener('hashchange',()=>render());
+/* ====== Vistas del estudiante ====== */
+function vista(p){const w=CUR;
+ switch(p[0]){
+  case 'panel':case '':return vPanel();
+  case 'nueva':{const t=nuevoTrabajo();t.estudiante=S.estudiante.nombre;S.trabajos.push(t);guardarYa();location.replace('#/trabajo/'+t.id+'/ctx');return ''}
+  case 'trabajo':return vTrabajo(w,p[2]||'ctx');
+  case 'portafolio':return vPortafolio();
+  case 'ayuda':return vAyuda();
+  case 'docente':return vDocente(p);
+  default:return vPanel()}}
+function vTrabajo(w,paso){const st=estado(w);
+ if(!puedeIr(w,paso,st)){return `<div class="callout warn">Esa fase aún está bloqueada. <button class="btn sm" data-act="go" data-a="${st.fase}">Ir a ${NOMBRE_PASO[st.fase]}</button></div>`}
+ const fn={ctx:vCtxV,E:vEV,I:vIV,V:vVV,D:vDV,A:vAV,comp:vCompV,IA:vIAV,informe:vInfV}[paso]||vCtxV;
+ document.title=`${NOMBRE_PASO[paso]||''} · EVIDA`;
+ return (w.demo?'<div class="demo-band">EJEMPLO ORIENTATIVO — no es una actividad oficial. Los datos y fuentes son ficticios y solo ilustran el recorrido.</div>':'')+`<div id="worktop" class="worktop">${topInner(w)}</div>`+fn(w,st)}
+
+/* ---------- Panel ---------- */
+function vPanel(){const T=S.trabajos.slice().sort((a,b)=>b.actualizado.localeCompare(a.actualizado));
+ const info=T.map(t=>({t,st:estado(t)}));const n=x=>info.filter(i=>i.st.txt===x).length;
+ const al=info.flatMap(i=>alertas(i.t,i.st).map(a=>({t:i.t,a})));
+ const card=({t,st})=>{const sj=asigDe(t.ctx.asignaturaId),a=alertas(t,st);
+  return `<article class="act"><div class="mi">${sj?`<span class="chip">${esc(sj.nombre)}</span>`:''}${t.ctx.tipo?`<span class="chip">${t.ctx.tipo}</span>`:''}${t.demo?'<span class="chip demo">Ejemplo orientativo</span>':''}<span class="chip ${st.txt==='Terminada'?'ok':st.txt==='En proceso'?'warn':''}">${st.txt}</span></div>
+  <h3>${esc(t.ctx.titulo||'(Sin título)')}</h3>
+  <div class="row"><div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${st.pct}" aria-label="Avance"><i style="width:${st.pct}%"></i></div><b>${st.pct}%</b></div>
+  <p class="hint">Fase actual: <b>${st.fase==='informe'?'Revisión final':NOMBRE_PASO[st.fase]}</b>${t.ctx.fecha?` · Fecha límite: ${esc(t.ctx.fecha)}`:''}</p>
+  ${a.length?`<div>${a.map(x=>`<span class="chip err">⚠ ${x}</span>`).join('')}</div>`:''}
+  <div class="row mt"><button class="btn pri sm" data-act="go2" data-a="${t.id}" data-b="${st.fase}">${t.estado==='finalizado'?'Abrir':'Continuar'}</button><button class="btn sm" data-act="go2" data-a="${t.id}" data-b="informe">Ver informe</button><button class="btn sm dng" data-act="delTrab" data-a="${t.id}">Eliminar</button></div></article>`};
+ const grupo=(titulo,txtE)=>{const g=info.filter(i=>i.st.txt===txtE);return g.length?`<h2 class="mt">${titulo} (${g.length})</h2><div class="acts">${g.map(card).join('')}</div>`:''};
+ const H=T.flatMap(t=>t.historial.map(h=>({t,h}))).sort((a,b)=>b.h.fecha.localeCompare(a.h.fecha));
+ return `<h1>Mi panel de actividades</h1>
+ <div class="callout info"><b class="t">No solo respondas: demuestra cómo llegaste a tu respuesta.</b>Cada actividad recorre el ciclo <b>E → V ↺ → I → D → A</b> (Evidencia, Verificación, Interpretación, Decisión, Argumentación). Puedes guardar borradores y continuar luego.</div>
+ <div class="card"><div class="grid g2">${F('s:estudiante.nombre','Tu nombre (aparecerá en tus informes)',{ph:'Nombres y apellidos'})}${F('s:estudiante.grupo','Curso o paralelo (opcional)')}</div></div>
+ <div class="row mb"><a class="btn pri" href="#/nueva">+ Nueva actividad</a><button class="btn" data-act="demo">Cargar actividad demostrativa (ejemplo)</button></div>
+ <div class="stats"><div class="stat"><b>${n('Pendiente')}</b>Pendientes</div><div class="stat"><b>${n('En proceso')}</b>En proceso</div><div class="stat"><b>${n('Terminada')}</b>Terminadas</div></div>
+ ${al.length?`<div class="callout warn"><b class="t">Alertas</b><ul>${al.map(x=>`<li><b>${esc(x.t.ctx.titulo||'Sin título')}</b>: ${x.a}</li>`).join('')}</ul></div>`:''}
+ ${T.length?grupo('En proceso','En proceso')+grupo('Pendientes','Pendiente')+grupo('Terminadas','Terminada'):'<div class="card"><p class="empty">Aún no tienes actividades. Crea una nueva o carga la actividad demostrativa para ver el recorrido completo.</p></div>'}
+ <h2 class="mt">Historial de cambios de posición</h2><p class="hint">Qué evidencia te hizo cambiar o reforzar una conclusión.</p>
+ ${H.length?`<ul class="hist">${H.map(({t,h})=>histLi(h,t.ctx.titulo)).join('')}</ul>`:'<p class="empty">Todavía no registras cambios. Aparecerán cuando regreses desde la Verificación o los registres.</p>'}`}
+function histLi(h,tit){const tp={regreso:'Regreso de fase',cambio:'Cambio de posición',refuerzo:'Posición reforzada'}[h.tipo]||h.tipo;
+ return `<li class="${h.tipo}"><b>${tp}</b>${h.fase?` · ${esc(h.fase)}`:''}${tit?` · <i>${esc(tit)}</i>`:''} <small>${fechaCorta(h.fecha)}</small><br>${h.antes?`<b>Antes:</b> ${nl(h.antes)}<br>`:''}${h.despues?`<b>Después:</b> ${nl(h.despues)}<br>`:''}${h.evidencia?`<b>Evidencia que lo provocó:</b> ${nl(h.evidencia)}<br>`:''}${h.motivo?`<b>Motivo:</b> ${nl(h.motivo)}`:''}</li>`}
+
+/* ---------- 0. Contexto ---------- */
+function vCtxV(w,st){const c=w.ctx,sj=subj(w),as=asigDe(c.asignaturaId),a=actDe(w);
+ const acts=S.config.actividades.filter(x=>(!c.asignaturaId||x.asignaturaId===c.asignaturaId)&&(!c.tipo||x.tipo===c.tipo));
+ const un=as&&as.unidades.length?as.unidades:null;const unSel=un&&un.find(u=>u.nombre===c.unidad);
+ LIVE=()=>{const b=$('#live');if(b)b.innerHTML=alertBox(estado(w).ctx,SHOWERR)};
+ return `${plainHead('x','0','Contexto de la actividad','Cuéntanos de qué trata. Sin esto no se puede empezar.')}
+ <div class="callout info"><b class="t">No solo respondas: demuestra cómo llegaste a tu respuesta.</b>Te vamos a pedir que muestres tu evidencia, cómo compruebas que es confiable, cómo la interpretas, qué decides y por qué. El ciclo es <b>E → V ↺ → I → D → A</b>: si al verificar encuentras errores, vuelves a Evidencia.</div>
+ <div class="card"><h3>1. ¿Qué actividad harás?</h3>
+ <div class="grid g2">${F('w:ctx.asignaturaId','Asignatura',{type:'select',req:1,rr:1,opts:[['','Selecciona…']].concat(S.config.asignaturas.map(x=>[x.id,x.nombre]))})}
+ ${acts.length||S.config.actividades.length?`<div class="field"><label for="selact">Actividad cargada por tu docente</label><select id="selact" data-chg="pickAct"><option value="">Ninguna: defino yo la actividad</option>${acts.map(x=>`<option value="${x.id}"${c.actividadId===x.id?' selected':''}>${esc(x.titulo)} (${x.tipo})</option>`).join('')}</select><p class="hint">${acts.length?'Al elegirla se rellenan los datos que cargó tu docente.':'No hay actividades cargadas para esta asignatura y tipo.'}</p></div>`:`<div class="field"><label>Actividad cargada por tu docente</label><p class="hint">Tu docente aún no ha cargado actividades. Escribe tú los datos de la actividad (se indicará que no son oficiales).</p></div>`}</div>
+ <fieldset class="field"><legend>Tipo de actividad <span class="req">*</span></legend><div class="tipos">${Object.keys(TIPOS).map(k=>`<label><input type="radio" name="tipoact" data-bind="w:ctx.tipo" data-rr="1" value="${k}"${c.tipo===k?' checked':''}><b>${k}</b><br><span class="hint">${TIPOS[k].n}</span><br><span class="hint">${TIPOS[k].d}</span></label>`).join('')}</div></fieldset></div>
+ ${as&&sj.enfoque?`<div class="callout info"><b class="t">Enfoque orientativo de ${esc(as.nombre)}</b>${sj.enfoque.split('·').map(x=>`<span class="chip">${esc(x.trim())}</span>`).join('')}<br><span class="hint">Sugerencias genéricas y editables por tu docente; no son contenidos oficiales.</span></div>`:''}
+ <div class="card"><h3>2. Datos de la actividad</h3>
+ <div class="grid g2">${un?F('w:ctx.unidad','Unidad',{type:'select',opts:[['','Selecciona…']].concat(un.map(u=>[u.nombre,u.nombre])),rr:1}):F('w:ctx.unidad','Unidad',{ph:'Si tu docente aún no cargó unidades, escríbela',help:as?'No hay unidades cargadas para esta asignatura.':''})}
+ ${F('w:ctx.tema','Tema',{ph:'Tema de la unidad',list:'dl-temas'})}</div>
+ <datalist id="dl-temas">${(unSel?unSel.temas||[]:[]).map(t=>`<option value="${esc(t)}">`).join('')}</datalist>
+ ${F('w:ctx.titulo','Título de la actividad',{req:1})}
+ ${F('w:ctx.problema','Problema, caso, reto o pregunta',{type:'textarea',rows:4,req:1,help:a?'Cargado por tu docente; puedes precisarlo si te lo indican.':'Describe qué debes explicar, resolver o decidir.'})}
+ ${F('w:ctx.ra','Resultado de aprendizaje',{type:'textarea',rows:2,help:txt(c.ra)&&a?'Cargado por tu docente.':'Solo si tu docente lo indicó. No lo inventes: puedes dejarlo vacío.'})}
+ <div class="grid g2">${F('w:ctx.entregable','Entregable esperado',{ph:'Informe, presentación, ficha…'})}${F('w:ctx.fecha','Fecha límite (si aplica)',{type:'date'})}</div>
+ ${a&&a.admisibles&&a.admisibles.length?`<p><b>Tipos de evidencia admitidos por tu docente:</b> ${a.admisibles.map(x=>`<span class="chip">${esc(lab(TIPOS_EV,x))}</span>`).join('')}</p>`:''}
+ ${a&&txt(a.criteriosEval)?`<div class="callout info"><b class="t">Criterios de evaluación de tu docente</b>${nl(a.criteriosEval)}</div>`:''}</div>
+ <div class="card"><h3>3. Participación y preparación según el tipo</h3>
+ ${R('w:ctx.participacion','Modalidad de participación',[['individual','Individual'],['grupal','Grupal']],{rr:1})}
+ ${c.participacion==='grupal'?F('w:ctx.integrantes','Integrantes del grupo',{ph:'Nombres de las personas del grupo'}):''}
+ ${c.tipo==='ACD'?F('w:ctx.indicaciones','Indicaciones del docente',{type:'textarea',rows:3,help:'Anota las indicaciones que dio tu docente para esta actividad guiada.'}):''}
+ ${c.tipo==='APE'?F('w:ctx.contextoPractico','Contexto práctico',{type:'textarea',rows:3,help:'¿Dónde, con quién o con qué se aplica? (laboratorio, simulación, empresa, trabajo de campo…)'}):''}
+ ${c.tipo==='AA'?F('w:ctx.plan','Plan personal de trabajo',{type:'textarea',rows:4,help:'¿Qué harás, en qué orden y en cuánto tiempo? Incluye tus metas de aprendizaje.'}):''}
+ ${!c.tipo?'<p class="hint">Elige el tipo de actividad para ver los campos específicos.</p>':''}</div>
+ <div id="live" aria-live="polite"></div>${navBtns(null,'E','Comenzar con Evidencia')}`}
+CHG.pickAct=id=>{const w=CUR;if(!id){w.ctx.actividadId='';rerender();return}const a=S.config.actividades.find(x=>x.id===id);if(!a)return;
+ Object.assign(w.ctx,{actividadId:a.id,asignaturaId:a.asignaturaId,tipo:a.tipo,unidad:a.unidad||'',titulo:a.titulo,problema:a.consigna||'',ra:a.ra||'',entregable:a.entregable||'',fecha:a.fecha||'',indicaciones:a.indicaciones||''});guardar();rerender()};
+
+/* ---------- E ---------- */
+const newEv=()=>({id:uid(),afirmacion:'',cat:'dato',tipo:'',nivel:'',fuente:'',autor:'',fecha:'',enlace:'',relevancia:'',confiabilidad:'',vacios:'',viaIA:false});
+function evCard(w,x,i){const p=`w:E.items.${i}.`;
+ return `<section class="item E" aria-label="Evidencia ${i+1}"><div class="ih"><b>E${i+1}</b><button class="btn sm dng" data-act="delEv" data-a="${i}">Quitar</button></div>
+ ${F(p+'afirmacion','Afirmación, dato o hallazgo',{type:'textarea',rows:2,req:1})}
+ ${R(p+'cat','¿Qué es esto?',[['dato','Dato verificable (otra persona puede comprobarlo)'],['opinion','Opinión (valoración que no se puede comprobar)']])}
+ <div class="grid g3">${F(p+'tipo','Tipo de evidencia',{type:'select',opts:TIPOS_EV})}${F(p+'nivel','Fuente primaria, secundaria o síntesis',{type:'select',opts:NIVEL_FUENTE})}${F(p+'fecha','Fecha del dato o la fuente',{ph:'2025-03-12 o 2025'})}</div>
+ <div class="grid g2">${F(p+'fuente','Fuente o procedencia',{req:1,ph:'Documento, base de datos, entrevista…'})}${F(p+'autor','Autor o entidad',{ph:'Persona u organismo responsable'})}</div>
+ ${F(p+'enlace','Enlace, referencia o archivo',{ph:'URL, cita bibliográfica o nombre del archivo'})}
+ <div class="grid g2">${F(p+'relevancia','Relevancia para el problema',{type:'select',opts:ALTA_MEDIA})}${F(p+'confiabilidad','Confiabilidad percibida de la fuente',{type:'select',opts:ALTA_MEDIA})}</div>
+ ${F(p+'vacios','Vacíos de información identificados',{type:'textarea',rows:2,ph:'¿Qué falta saber sobre este punto?'})}
+ ${CK(p+'viaIA','Esta información me la sugirió o resumió una herramienta de IA (debo comprobarla en una fuente real)')}
+ <p class="st" data-evst="${x.id}" aria-live="polite"></p></section>`}
+function vEV(w,st){if(!w.E.items.length)w.E.items.push(newEv());
+ const sinF=true;
+ LIVE=()=>{const s=estado(w);w.E.items.forEach(x=>{const el=$(`[data-evst="${x.id}"]`);if(!el)return;if(!txt(x.afirmacion)&&!txt(x.fuente)){el.className='st';el.textContent='';return}
+  if(x.cat==='opinion'){el.className='st op';el.textContent='Opinión: se conserva, pero no cuenta como evidencia verificable.'}
+  else{const f=faltasEv(x);if(f.length){el.className='st no';el.textContent='Para ser trazable falta: '+f.join('; ')+'.'}else{el.className='st ok';el.textContent='✓ Evidencia trazable'+(x.nivel==='secundaria'||x.nivel==='sintesis'?' · busca la fuente primaria si es posible':'')}}});
+  const b=$('#live');if(b)b.innerHTML=alertBox(s.E,SHOWERR)};
+ const adm=admisibles(w);
+ return `${phaseHead('E')}${ayudaBox('E',w)}${fbBox(w,'E')}${bannerRegreso(w,'E')}
+ ${adm?`<div class="callout info"><b class="t">Tipos de evidencia admitidos por tu docente</b>${adm.map(x=>`<span class="chip">${esc(lab(TIPOS_EV,x))}</span>`).join('')}</div>`:''}
+ <div class="callout info"><b class="t">Recuerda</b>Una respuesta de IA no es evidencia por sí sola. Si una herramienta te dio un dato, busca y registra el documento, dato o autor real donde puedes comprobarlo.</div>
+ <div id="E-items">${w.E.items.map((x,i)=>evCard(w,x,i)).join('')}</div>
+ <button class="btn mb" data-act="addEv">+ Añadir otra evidencia</button>
+ <div class="card">${F('w:E.vacios','Vacíos generales de información',{type:'textarea',rows:2,help:'¿Qué información importante todavía no tienes o no pudiste encontrar?'})}</div>
+ <details class="help"><summary>Ver como matriz (solo lectura)</summary><div class="tw"><table><thead><tr><th>#</th><th>Afirmación</th><th>Naturaleza</th><th>Tipo</th><th>Nivel</th><th>Fuente · autor · fecha</th><th>Enlace</th><th>Relev.</th><th>Confiab.</th></tr></thead><tbody>${w.E.items.map((x,i)=>`<tr><td>E${i+1}</td><td>${nl(x.afirmacion)}</td><td>${x.cat==='opinion'?'Opinión':'Dato'}</td><td>${esc(lab(TIPOS_EV,x.tipo))}</td><td>${esc((lab(NIVEL_FUENTE,x.nivel)||'').split(' (')[0])}</td><td>${esc(x.fuente)} · ${esc(x.autor)} · ${esc(x.fecha)}</td><td>${esc(x.enlace)}</td><td>${esc(lab(ALTA_MEDIA,x.relevancia))}</td><td>${esc(lab(ALTA_MEDIA,x.confiabilidad))}</td></tr>`).join('')}</tbody></table></div></details>
+ <div id="live" aria-live="polite"></div>${navBtns('ctx','V')}`}
+ACT.addEv=()=>{CUR.E.items.push(newEv());rerender()};
+ACT.delEv=i=>{const x=CUR.E.items[+i];const f=()=>{CUR.E.items.splice(+i,1);guardar();rerender()};if(txt(x.afirmacion)||txt(x.fuente))confirmar('Quitar evidencia','¿Quitar esta evidencia? Se perderán sus datos.',f,'Quitar','dng');else f()};
+
+/* ---------- Banner de regreso pendiente ---------- */
+function bannerRegreso(w,dest){const hs=w.historial.filter(h=>h.tipo==='regreso'&&h.destino===dest&&!h.cerrado);if(!hs.length)return '';
+ return hs.map(h=>`<div class="callout warn"><b class="t">Regresaste desde Verificación a Evidencia</b>Motivo registrado: «${esc(h.motivo)}». Corrige lo necesario y, cuando termines, registra qué cambió.<div class="row mt"><button class="btn sm" data-act="regCambio">Registrar cambio de posición</button><button class="btn sm pri" data-act="cerrarRegreso" data-a="${h.id}">Ya lo revisé: volver a Verificación</button></div></div>`).join('')}
+
+/* ---------- I ---------- */
+function vIV(w,st){const I=w.I;
+ LIVE=()=>{const s=estado(w);const b=$('#live');if(b)b.innerHTML=alertBox(s.I,SHOWERR);
+  I.items.forEach(x=>{const el=$(`[data-causal="${x.id}"]`);if(!el)return;const c=['inferencia','hipotesis','hecho'].includes(x.cat)&&RX_CAUSAL.test(txt(x.texto))&&!(x.ev&&x.ev.length);el.textContent=c?'⚠ Parece afirmar una causa sin evidencia vinculada. Vincula evidencias o reformula como hipótesis.':''})};
+ const col=c=>{const its=I.items.map((x,i)=>({x,i})).filter(o=>o.x.cat===c.k);
+  return `<section class="col ${c.k}" aria-label="${c.n}"><h4>${c.n}</h4><p class="ds">${c.d}</p>${its.map(({x,i})=>`<div class="mini"><div class="field"><label for="ii${i}">${c.s} ${its.findIndex(o=>o.i===i)+1}</label><textarea id="ii${i}" data-bind="w:I.items.${i}.texto" rows="2">${esc(x.texto)}</textarea></div>${c.k!=='opinion'?`<p class="hint">Evidencias que lo respaldan:</p>${refsBox('w:I.items.'+i+'.ev',x.ev)}`:''}<p class="st op" data-causal="${x.id}"></p><button class="btn sm dng mt" data-act="delI" data-a="${i}">Quitar</button></div>`).join('')}<button class="btn sm" data-act="addI" data-a="${c.k}">+ Añadir ${c.s.toLowerCase()}</button></section>`};
+ return `${phaseHead('I')}${ayudaBox('I',w)}${fbBox(w,'I')}
+ <div class="callout info"><b class="t">Interpretar no es repetir datos.</b>Aquí explicas qué significan, cómo se relacionan y qué estás dando por supuesto. Mantén separados hechos, inferencias, supuestos, opiniones e hipótesis.</div>
+ <div class="card">${F('w:I.significado','¿Qué significa la evidencia?',{type:'textarea',rows:3,req:1})}${F('w:I.relaciones','¿Qué relación existe entre los datos?',{type:'textarea',rows:3})}</div>
+ <div class="row mb"><button class="btn sm" data-act="impHechos">Traer mis datos verificables como «hechos»</button><span class="hint">Copia los datos trazables de la fase E; luego escribe tus inferencias.</span></div>
+ <div class="cols5">${CATS.map(col).join('')}</div>
+ <div class="card mt"><h3>Interpretaciones o explicaciones alternativas <span class="req">*</span></h3><p class="hint">¿Qué otra explicación podría tener la misma evidencia?</p>
+ ${I.alternativas.map((a,i)=>`<div class="mini item I">${F(`w:I.alternativas.${i}.texto`,'Alternativa '+(i+1),{type:'textarea',rows:2})}<button class="btn sm dng" data-act="delAlt" data-a="${i}">Quitar</button></div>`).join('')}
+ <button class="btn sm" data-act="addAlt">+ Añadir alternativa</button>
+ ${CK('w:I.sinAlt','Este problema no admite otra interpretación (explícalo abajo)',{rr:1})}${I.sinAlt?F('w:I.justAlt','¿Por qué no aplica?',{type:'textarea',rows:2}):''}</div>
+ <div class="card">${F('w:I.noConcluir','¿Qué no se puede concluir todavía?',{type:'textarea',rows:3,req:1,help:'Declarar lo que no sabes es parte de pensar bien.'})}</div>
+ <div id="live" aria-live="polite"></div>${navBtns('V','D')}`}
+ACT.addI=k=>{CUR.I.items.push({id:uid(),cat:k,texto:'',ev:[]});rerender()};
+ACT.delI=i=>{CUR.I.items.splice(+i,1);guardar();rerender()};
+ACT.addAlt=()=>{CUR.I.alternativas.push({id:uid(),texto:''});rerender()};
+ACT.delAlt=i=>{CUR.I.alternativas.splice(+i,1);guardar();rerender()};
+ACT.impHechos=()=>{const w=CUR;let n=0;w.E.items.filter(esTrazable).forEach(x=>{if(!w.I.items.some(h=>h.cat==='hecho'&&(h.ev||[]).includes(x.id))){w.I.items.push({id:uid(),cat:'hecho',texto:txt(x.afirmacion),ev:[x.id]});n++}});toast(n?`Se añadieron ${n} hecho(s).`:'No hay datos nuevos para traer.');guardar();rerender()};
+
+/* ---------- V ---------- */
+const newVer=()=>({id:uid(),ref:'',afirmacion:'',original:'',contraste:'',tipo:'',como:'',resultado:'',correccion:'',regreso:''});
+function verCard(w,x,i){const p=`w:V.items.${i}.`;const sug=x.resultado==='contradice'||x.resultado==='matiza'||x.regreso;
+ return `<section class="item V" aria-label="Verificación ${i+1}"><div class="ih"><b>Verificación ${i+1}</b><button class="btn sm dng" data-act="delVer" data-a="${i}">Quitar</button></div>
+ ${F(p+'ref','Evidencia que verifico (opcional)',{type:'select',opts:[['','— Ninguna en particular —']].concat(w.E.items.filter(e=>txt(e.afirmacion)).map(e=>[e.id,evN(w,e.id)+': '+txt(e.afirmacion).slice(0,70)]))})}
+ ${F(p+'afirmacion','Afirmación o hipótesis que se verifica',{type:'textarea',rows:2,req:1})}
+ <div class="grid g2">${F(p+'original','Fuente o evidencia original',{ph:'¿De dónde venía?'})}${F(p+'contraste','Fuente de contraste',{req:1,ph:'¿Con qué la comparaste? (no una IA)'})}</div>
+ ${F(p+'tipo','Tipo de verificación',{type:'select',opts:TIPOS_VER,req:1})}
+ ${F(p+'como','¿Cómo lo verificaste? (explica tu procedimiento)',{type:'textarea',rows:3,req:1,help:'Esto es lo más importante: que otra persona pueda repetir tu comprobación.'})}
+ ${R(p+'resultado','Resultado',RESULTADOS.slice(1),{rr:1})}
+ ${F(p+'correccion','Corrección o cambio realizado',{type:'textarea',rows:2,help:'¿Qué cambiaste en tu evidencia o interpretación a partir de esto?'})}
+ ${F(p+'regreso','¿Debes regresar a una fase anterior?',{type:'select',rr:1,opts:[['','No, puedo continuar'],['E','Sí: volver a Evidencia']]})}
+ ${sug?`<button class="btn" data-act="volver" data-a="E" data-b="${i}">Volver y revisar Evidencia</button>`:''}</section>`}
+function vVV(w,st){if(!w.V.items.length)w.V.items.push(newVer());
+ LIVE=()=>{const s=estado(w);const b=$('#live');if(b)b.innerHTML=alertBox(s.V,SHOWERR)};const v=st.V;
+ return `${phaseHead('V')}${ayudaBox('V',w)}${fbBox(w,'V')}
+ <div class="callout info"><b class="t">Reglas de esta fase</b>Una respuesta producida por IA no puede registrarse como evidencia final: debe enlazarse a fuentes comprobables. Necesitas al menos una verificación completa para pasar a Decisión.</div>
+ ${v.revisar?`<div class="callout warn"><b class="t">Señales para revisar tu trabajo</b>Detectamos: ${v.motivoRevisar.join('; ')}.<div class="row mt"><button class="btn pri" data-act="volver" data-a="E">Volver y revisar Evidencia</button></div></div>`:''}
+ ${w.V.items.map((x,i)=>verCard(w,x,i)).join('')}
+ <div class="row mb"><button class="btn" data-act="addVer">+ Añadir otra verificación</button><button class="btn" data-act="regCambio">Registrar cambio de posición</button></div>
+ <h3>Historial de cambios de posición</h3>${w.historial.length?`<ul class="hist">${w.historial.slice().reverse().map(h=>histLi(h)).join('')}</ul>`:'<p class="empty">Sin registros todavía.</p>'}
+ <div id="live" aria-live="polite"></div>${navBtns('E','I')}`}
+ACT.addVer=()=>{CUR.V.items.push(newVer());rerender()};
+ACT.delVer=i=>{CUR.V.items.splice(+i,1);guardar();rerender()};
+HOOK.push((rk,path)=>{const m=/^V\.items\.(\d+)\.ref$/.exec(path);if(rk==='w'&&m){const v=CUR.V.items[+m[1]],e=CUR.E.items.find(x=>x.id===v.ref);if(e){if(!txt(v.afirmacion))v.afirmacion=txt(e.afirmacion);if(!txt(v.original))v.original=[e.fuente,e.autor].filter(txt).join(' — ')}rerender();return true}
+ if(rk==='w'&&/^V\.items\.\d+\.(resultado|regreso)$/.test(path)){rerender();return true}return false});
+ACT.volver=(dest,idx)=>{const w=CUR;const it=idx!=null&&idx!==''?w.V.items[+idx]:null;
+ const d=modal('Volver a Evidencia',`<p>Volver atrás es parte del método. Queda registrado en tu historial.</p><div class="field"><label for="mot">¿Qué hallazgo motiva el regreso?</label><textarea id="mot" rows="3">${it?esc(txt(it.correccion)||txt(it.afirmacion)):''}</textarea></div>`,
+ [{t:'Cancelar'},{t:'Registrar y volver',cls:'pri',fn:m=>{const mo=txt($('#mot',m).value);if(!mo){$('#mot',m).focus();return false}
+  w.historial.push({id:uid(),fecha:ahora(),tipo:'regreso',fase:'V → E',destino:dest,motivo:mo,cerrado:false});if(it)it.regreso=dest;guardarYa();nav('trabajo/'+w.id+'/'+dest)}}])};
+ACT.cerrarRegreso=id=>{const h=CUR.historial.find(x=>x.id===id);if(h)h.cerrado=true;guardarYa();nav('trabajo/'+CUR.id+'/V')};
+ACT.regCambio=()=>{const w=CUR;modal('Registrar cambio de posición',`<div class="field"><label for="ct">Tipo</label><select id="ct"><option value="cambio">Cambié de posición</option><option value="refuerzo">Reforcé mi posición</option></select></div><div class="field"><label for="ca">Mi posición antes</label><textarea id="ca" rows="2"></textarea></div><div class="field"><label for="cd">Mi posición ahora</label><textarea id="cd" rows="2"></textarea></div><div class="field"><label for="ce">¿Qué evidencia lo provocó?</label><textarea id="ce" rows="2"></textarea></div>`,
+ [{t:'Cancelar'},{t:'Guardar registro',cls:'pri',fn:m=>{const g=i=>txt($(i,m).value);if(!g('#cd')||!g('#ce')){toast('Indica tu posición actual y la evidencia que lo provocó.');return false}
+  w.historial.push({id:uid(),fecha:ahora(),tipo:g('#ct'),fase:ruta()[2]||'',antes:g('#ca'),despues:g('#cd'),evidencia:g('#ce')});guardarYa();rerender();toast('Registro guardado.')}}])};
+
+/* ---------- D ---------- */
+function ensureD(w){const D=w.D,a=actDe(w),sj=subj(w);
+ if(!D.criterios.length){const sug=(a&&txt(a.criteriosDecision)?a.criteriosDecision:sj.criterios||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
+  S.config.criterios.forEach(n=>D.criterios.push({id:uid(),nombre:n,peso:1,on:sug.includes(n.toLowerCase()),evidencia:''}));
+  sug.forEach(n=>{if(!D.criterios.some(c=>c.nombre.toLowerCase()===n))D.criterios.push({id:uid(),nombre:n.charAt(0).toUpperCase()+n.slice(1),peso:1,on:true,evidencia:''})})}
+ while(D.alternativas.length<2)D.alternativas.push({id:uid(),nombre:'',descripcion:''})}
+const totales=w=>{const t={};altsOk(w).forEach(a=>{t[a.id]=critsOn(w).reduce((s,c)=>s+(+c.peso||1)*(+w.D.puntajes[a.id+'|'+c.id]||0),0)});return t};
+function vDV(w,st){ensureD(w);const D=w.D;
+ LIVE=()=>{const s=estado(w);const b=$('#live');if(b)b.innerHTML=alertBox(s.D,SHOWERR);const t=totales(w);Object.keys(t).forEach(k=>{const el=$(`[data-tot="${k}"]`);if(el)el.textContent=t[k]})};
+ const cs=critsOn(w),as=altsOk(w);
+ return `${phaseHead('D')}${ayudaBox('D',w)}${fbBox(w,'D')}
+ <div class="callout info"><b class="t">Una decisión puede ser provisional.</b>Debe ser proporcional a la evidencia disponible: si la evidencia es débil, tu confianza debe ser menor y tu decisión puede ser «por ahora».</div>
+ <div class="card"><h3>1. Alternativas consideradas <span class="req">*</span></h3>
+ ${D.alternativas.map((a,i)=>`<div class="item D"><div class="ih"><b>Alternativa ${i+1}</b>${D.alternativas.length>2?`<button class="btn sm dng" data-act="delAltD" data-a="${i}">Quitar</button>`:''}</div><div class="grid g2">${F(`w:D.alternativas.${i}.nombre`,'Nombre',{req:1})}${F(`w:D.alternativas.${i}.descripcion`,'Descripción breve')}</div></div>`).join('')}
+ <button class="btn sm" data-act="addAltD">+ Añadir alternativa</button></div>
+ <div class="card"><h3>2. Criterios para comparar y evidencia que los respalda <span class="req">*</span></h3><p class="hint">Marca al menos dos criterios. Para cada uno, indica qué evidencia lo respalda (por ejemplo «E2, E3»).</p>
+ ${D.criterios.map((c,i)=>`<div class="item D"><div class="row sp"><label class="check" style="margin:0"><input type="checkbox" data-bind="w:D.criterios.${i}.on" data-rr="1"${c.on?' checked':''}> <b>${esc(c.nombre)}</b></label>${c.on?`<div style="width:180px">${F(`w:D.criterios.${i}.peso`,'Peso (importancia)',{type:'select',num:1,opts:[[1,'1 · baja'],[2,'2 · media'],[3,'3 · alta']]})}</div>`:''}</div>${c.on?F(`w:D.criterios.${i}.evidencia`,'Evidencia que respalda este criterio',{type:'textarea',rows:2}):''}</div>`).join('')}
+ <div class="row"><div class="field" style="flex:1;min-width:200px;margin:0"><label for="nc">Añadir criterio propio</label><input id="nc" type="text" placeholder="Ej.: Aceptación del cliente"></div><button class="btn sm" data-act="addCrit">Añadir</button></div></div>
+ ${as.length>=2&&cs.length>=2?`<div class="card"><h3>3. Matriz de decisión</h3><p class="hint">Valora de 1 a 5 qué tan bien responde cada alternativa a cada criterio (5 = la favorece mucho; en costo o riesgo, 5 = menor costo o menor riesgo). La suma ponderada es <b>orientativa: no decide por ti</b>.</p>
+ <div class="tw"><table><caption class="sr">Matriz de decisión</caption><thead><tr><th scope="col">Criterio (peso)</th>${as.map(a=>`<th scope="col">${esc(a.nombre)}</th>`).join('')}</tr></thead><tbody>${cs.map(c=>`<tr><th scope="row">${esc(c.nombre)} (${c.peso||1})</th>${as.map(a=>`<td><select aria-label="${esc(c.nombre)} para ${esc(a.nombre)}" data-bind="w:D.puntajes.${a.id}|${c.id}" data-num="1"><option value="">—</option>${[1,2,3,4,5].map(n=>`<option value="${n}"${+D.puntajes[a.id+'|'+c.id]===n?' selected':''}>${n}</option>`).join('')}</select></td>`).join('')}</tr>`).join('')}</tbody><tfoot><tr><td>Suma ponderada (orientativa)</td>${as.map(a=>`<td data-tot="${a.id}">0</td>`).join('')}</tr></tfoot></table></div></div>`:'<div class="callout info">La matriz aparecerá cuando tengas al menos dos alternativas con nombre y dos criterios marcados.</div>'}
+ <div class="card"><h3>4. Decisión</h3>${F('w:D.riesgos','Riesgos y consecuencias',{type:'textarea',rows:3,req:1})}${F('w:D.decision','Decisión, solución, recomendación o conclusión',{type:'textarea',rows:3,req:1})}
+ ${R('w:D.confianza','Nivel de confianza en tu decisión',[['bajo','Bajo'],['medio','Medio'],['alto','Alto']])}
+ ${F('w:D.incertidumbres','Incertidumbres que permanecen',{type:'textarea',rows:2,req:1})}${CK('w:D.provisional','Mi decisión es provisional y la revisaré si aparece nueva evidencia')}</div>
+ <div id="live" aria-live="polite"></div>${navBtns('I','A')}`}
+ACT.addAltD=()=>{CUR.D.alternativas.push({id:uid(),nombre:'',descripcion:''});rerender()};
+ACT.delAltD=i=>{CUR.D.alternativas.splice(+i,1);guardar();rerender()};
+ACT.addCrit=()=>{const v=txt($('#nc').value);if(!v)return $('#nc').focus();CUR.D.criterios.push({id:uid(),nombre:v,peso:1,on:true,evidencia:''});guardar();rerender()};
+
+/* ---------- A ---------- */
+function argHTML(w){const A=w.A,r=(t,v)=>txt(v)?`<div><b>${t}</b>${nl(v)}</div>`:`<div><b>${t}</b><span class="empty">(pendiente)</span></div>`;
+ const refs=(A.evidenciaIds||[]).map(id=>evN(w,id)).join(', ');
+ return `<div class="arg"><div class="tesis"><b>Tesis, propuesta o decisión</b>${txt(A.tesis)?nl(A.tesis):'<span class="empty">(pendiente)</span>'}</div>${r('Evidencia clave'+(refs?' ('+refs+')':''),A.evidenciaClave)}${r('Razonamiento que une evidencia y decisión',A.razonamiento)}${r('Criterios utilizados',A.criterios)}${r('Objeción o contraargumento relevante',A.objecion)}${r('Respuesta a la objeción',A.respuesta)}${r('Limitaciones',A.limitaciones)}${r('Qué nueva evidencia podría modificar la decisión',A.nuevaEvidencia)}</div>`}
+function vAV(w,st){LIVE=()=>{const s=estado(w);const b=$('#live');if(b)b.innerHTML=alertBox(s.A,SHOWERR);const p=$('#argprev');if(p)p.innerHTML=argHTML(w)};
+ return `${phaseHead('A')}${ayudaBox('A',w)}${fbBox(w,'A')}
+ <div class="callout info"><b class="t">Tú escribes el argumento.</b>La herramienta solo lo ordena como argumento defendible; no redacta contenido por ti.</div>
+ <div class="card">${F('w:A.tesis','Tesis, propuesta o decisión principal',{type:'textarea',rows:2,req:1})}
+ <div class="field"><span class="hint">Evidencias clave que la respaldan:</span>${refsBox('w:A.evidenciaIds',w.A.evidenciaIds)}</div>${F('w:A.evidenciaClave','Evidencia clave (explica cuál y por qué pesa)',{type:'textarea',rows:3,req:1})}
+ ${F('w:A.razonamiento','Razonamiento que vincula la evidencia con la decisión',{type:'textarea',rows:4,req:1,help:'Responde: ¿por qué esa evidencia lleva a esa decisión?'})}
+ ${F('w:A.criterios','Criterios utilizados',{type:'textarea',rows:2,req:1})}<button class="btn sm" data-act="criteriosD">Traer los criterios que marqué en Decisión</button></div>
+ <div class="card">${F('w:A.objecion','Una objeción o contraargumento relevante',{type:'textarea',rows:2,req:1})}${F('w:A.respuesta','Respuesta a la objeción',{type:'textarea',rows:3,req:1})}
+ ${F('w:A.limitaciones','Limitaciones de tu conclusión',{type:'textarea',rows:2,req:1})}${F('w:A.nuevaEvidencia','¿Qué nueva evidencia podría modificar tu decisión?',{type:'textarea',rows:2,req:1})}</div>
+ <h3>Vista del argumento</h3><div id="argprev">${argHTML(w)}</div>
+ <div id="live" class="mt" aria-live="polite"></div>${navBtns('D',null)}
+ <div class="row sp mt noprint"><span></span><button class="btn pri" data-act="sigPaso" data-a="comp">Continuar: registro de la actividad →</button></div>`}
+ACT.criteriosD=()=>{const n=critsOn(CUR).map(c=>c.nombre).join(', ');if(!n)return toast('Aún no marcaste criterios en la fase D.');CUR.A.criterios=n;guardar();rerender()};
+ACT.sigPaso=p=>{const v=estado(CUR);if(!v.A.ok){SHOWERR=true;live();toast('Completa la argumentación para continuar.');return}nav('trabajo/'+CUR.id+'/'+p)};
+
+/* ---------- navegación con validación ---------- */
+ACT.go=p=>nav('trabajo/'+CUR.id+'/'+p);
+ACT.go2=(id,p)=>nav('trabajo/'+id+'/'+p);
+ACT.salir=()=>{guardarYa();nav('panel');toast('Borrador guardado.')};
+ACT.sig=to=>{const w=CUR,from=ruta()[2]||'ctx',st=estado(w),v=st[from];
+ if(!v.ok){SHOWERR=true;live();const l=$('#live');if(l){l.scrollIntoView({behavior:'smooth',block:'center'})}return}
+ if(from==='V'&&v.sinV&&v.sinV.length){modal('Información importante sin verificar',`<p>No explicaste cómo verificaste: <b>${v.sinV.map(e=>evN(w,e.id)).join(', ')}</b> (relevancia alta). Decidir sobre información no verificada debilita tu conclusión.</p>`,[{t:'Volver a documentar',cls:'pri'},{t:'Continuar de todos modos',fn:()=>nav('trabajo/'+w.id+'/'+to)}]);return}
+ nav('trabajo/'+w.id+'/'+to)};
+ACT.nueva=()=>{location.hash='#/nueva'};
+ACT.rol=r=>{S.rol=r;guardar();nav(r==='docente'?'docente/portafolios':'panel')};
+ACT.delTrab=id=>{const t=S.trabajos.find(x=>x.id===id);confirmar('Eliminar actividad',`¿Eliminar «${esc(t.ctx.titulo||'sin título')}»? No se puede deshacer. Si quieres conservarla, antes exporta una copia en «Mi portafolio».`,()=>{S.trabajos=S.trabajos.filter(x=>x.id!==id);guardarYa();rerender()},'Eliminar','dng')};
+ACT.demo=()=>{const t=crearDemo();S.trabajos.push(t);guardarYa();nav('trabajo/'+t.id+'/informe')};
+
+/* ---------- Registro por tipo ---------- */
+const TPL={aportes:{autor:'',texto:''},productos:{texto:'',enlace:''},observaciones:{fecha:'',texto:''},fuentes:{texto:'',tipo:'',util:''},bitacora:{fecha:'',texto:'',horas:''}};
+ACT.addRow=(path,tpl)=>{getp(CUR,path).push(Object.assign({id:uid()},clone(TPL[tpl])));rerender()};
+ACT.delRow=(path,i)=>{getp(CUR,path).splice(+i,1);guardar();rerender()};
+function lista(path,tpl,titulo,campos,addTxt){const arr=getp(CUR,path);
+ return `<div class="card"><h3>${titulo}</h3>${arr.map((x,i)=>`<div class="item x"><div class="ih"><b>${i+1}</b><button class="btn sm dng" data-act="delRow" data-a="${path}" data-b="${i}">Quitar</button></div><div class="grid ${campos.length>2?'g3':'g2'}">${campos.map(c=>F(`w:${path}.${i}.${c[0]}`,c[1],{type:c[2]||'text',rows:2,opts:c[3],ph:c[4]||''})).join('')}</div></div>`).join('')||'<p class="empty">Aún no hay registros.</p>'}<button class="btn sm" data-act="addRow" data-a="${path}" data-b="${tpl}">+ ${addTxt}</button></div>`}
+function vCompV(w,st){const t=w.ctx.tipo,c=w.comp;
+ LIVE=()=>{const s=estado(w);const b=$('#live');if(b)b.innerHTML=alertBox(s.comp,SHOWERR);if(t==='AA'){const r=retro(w),el=$('#autoeval-auto');if(el)el.innerHTML=autoevalAuto(w,r)}};
+ let h=`${plainHead('x','✎','Registro de la actividad '+t,TIPOS[t]?TIPOS[t].n:'Selecciona el tipo en el contexto.')}${fbBox(w,'general')}`;
+ if(t==='ACD')h+=(txt(w.ctx.indicaciones)?`<div class="callout info"><b class="t">Indicaciones del docente</b>${nl(w.ctx.indicaciones)}</div>`:'')+lista('comp.aportes','aportes','Aportes de la discusión',[['autor','Quién aportó (tú, un compañero…)'],['texto','Aporte registrado','textarea']],'Añadir aporte')+`<div class="card">${F('w:comp.cierre','Cierre reflexivo',{type:'textarea',rows:4,req:1,help:'¿Qué cambió entre tu primera intuición y tu decisión final? ¿Qué evidencia te hizo cambiar o reforzar tu posición?'})}</div>`;
+ else if(t==='APE')h+=(txt(w.ctx.contextoPractico)?`<div class="callout info"><b class="t">Contexto práctico</b>${nl(w.ctx.contextoPractico)}</div>`:'')+lista('comp.productos','productos','Evidencias o productos generados',[['texto','Descripción del producto o evidencia','textarea'],['enlace','Enlace o archivo']],'Añadir producto')+lista('comp.observaciones','observaciones','Registro de observaciones',[['fecha','Fecha'],['texto','Observación','textarea']],'Añadir observación')+`<div class="card">${F('w:comp.prueba','Prueba o contraste de la solución',{type:'textarea',rows:3,req:1,help:'¿Cómo probaste que tu solución funciona o no?'})}${F('w:comp.decisionAplicada','Decisión aplicada',{type:'textarea',rows:3,req:1})}${F('w:comp.resultados','Evidencia de resultados',{type:'textarea',rows:3,req:1,help:'¿Qué pasó al aplicar la decisión? ¿Con qué datos o registros lo sabes?'})}</div>`;
+ else if(t==='AA')h+=(txt(w.ctx.plan)?`<div class="callout info"><b class="t">Tu plan personal de trabajo</b>${nl(w.ctx.plan)}</div>`:'')+lista('comp.fuentes','fuentes','Fuentes consultadas',[['texto','Referencia (autor, título, año, enlace)','textarea'],['tipo','Tipo de fuente'],['util','¿Para qué te sirvió?']],'Añadir fuente')+lista('comp.bitacora','bitacora','Bitácora de avance',[['fecha','Fecha'],['texto','Qué hiciste y qué aprendiste','textarea'],['horas','Tiempo dedicado']],'Añadir entrada')+`<div class="card">${F('w:comp.metacognicion','Reflexión metacognitiva',{type:'textarea',rows:4,req:1,help:'¿Cómo aprendiste? ¿Qué te costó? ¿Qué harías distinto? ¿Qué evidencia te hizo cambiar o reforzar tu posición?'})}</div>
+ <div class="card"><h3>Autoevaluación con rúbrica EVIDA <span class="req">*</span></h3><p class="hint">Valora cada dimensión de 1 a 4 según los descriptores. Es una autoevaluación: no sustituye la evaluación de tu docente.</p>
+ ${['E','V','I','D','A'].map(k=>`<div class="grid g2">${F('w:comp.autoeval.'+k,k+' — '+FASES.find(f=>f.k===k).n,{type:'select',num:1,opts:[['','Selecciona…']].concat([1,2,3,4].map(n=>[n,`${n} · ${NIVELES[n]} — ${S.config.rubrica.desc[k][n]}`]))})}<div></div></div>`).join('')}
+ ${F('w:comp.autoevalTxt','Justifica tu autoevaluación',{type:'textarea',rows:3})}<div id="autoeval-auto"></div></div>`;
+ else h+='<div class="callout warn">Selecciona el tipo de actividad en el Contexto.</div>';
+ return h+`<div id="live" aria-live="polite"></div>${navBtns('A','IA','Uso de IA')}`}
+function autoevalAuto(w,r){return `<div class="callout info"><b class="t">Retroalimentación automática orientativa (no es evaluación)</b>Según lo que registraste, tu trabajo se parece a: ${['E','V','I','D','A'].map(k=>`<span class="chip">${k}: ${r[k].nivel} · ${NIVELES[r[k].nivel]}</span>`).join('')}</div>`}
+
+/* ---------- Uso de IA ---------- */
+function declaracionIA(w){const IA=w.IA,nom=w.estudiante||S.estudiante.nombre||'el/la estudiante',tit=w.ctx.titulo||'la actividad';
+ if(IA.uso==='no')return `Yo, ${nom}, declaro que no utilicé herramientas de inteligencia artificial para desarrollar la actividad «${tit}». La responsabilidad intelectual de la verificación, la decisión y la argumentación es mía.`;
+ if(IA.uso!=='si')return 'Declaración pendiente.';
+ return `Yo, ${nom}, declaro que utilicé inteligencia artificial en la actividad «${tit}» del siguiente modo. La responsabilidad intelectual de la verificación, la decisión y la argumentación es mía.\n\n`+IA.entries.map((e,i)=>`Uso ${i+1}\n• Herramienta: ${txt(e.herramienta)||'(pendiente)'}\n• Finalidad: ${txt(e.finalidad)||'(pendiente)'}\n• Instrucciones dadas (resumen): ${txt(e.instrucciones)||'(pendiente)'}\n• Contenido verificado externamente: ${txt(e.verificado)||'(pendiente)'}\n• Contenido descartado o corregido: ${txt(e.descartado)||'(pendiente)'}\n• Mi aporte intelectual propio: ${txt(e.aporte)||'(pendiente)'}`).join('\n\n')}
+function vIAV(w,st){const IA=w.IA;
+ LIVE=()=>{const s=estado(w);const b=$('#live');if(b)b.innerHTML=alertBox(s.IA,SHOWERR);const d=$('#decl');if(d)d.textContent=declaracionIA(w)};
+ return `${plainHead('x','IA','Uso responsable de IA','Declara con transparencia si usaste IA y cómo verificaste lo que te dio.')}${fbBox(w,'general')}
+ <div class="callout info"><b class="t">${REGLA_IA}</b>Usar IA no está prohibido: lo que cuenta es qué operación mental conservaste tú y cómo verificaste el contenido generado.</div>
+ <div class="card">${R('w:IA.uso','¿Usaste inteligencia artificial en esta actividad?',[['si','Sí, la usé'],['no','No la usé']],{rr:1})}</div>
+ ${IA.uso==='si'?IA.entries.map((e,i)=>`<section class="item x"><div class="ih"><b>Uso de IA n.º ${i+1}</b><button class="btn sm dng" data-act="delIA" data-a="${i}">Quitar</button></div>
+ <div class="grid g2">${F(`w:IA.entries.${i}.herramienta`,'Herramienta utilizada',{req:1,ph:'Nombre de la herramienta y versión, si la conoces'})}${F(`w:IA.entries.${i}.finalidad`,'Finalidad de uso',{req:1,ph:'¿Para qué la usaste?'})}</div>
+ ${F(`w:IA.entries.${i}.instrucciones`,'Resumen de las instrucciones que diste a la IA',{type:'textarea',rows:2,req:1})}
+ ${F(`w:IA.entries.${i}.verificado`,'Contenido generado que verificaste externamente (y cómo)',{type:'textarea',rows:2,req:1})}
+ ${F(`w:IA.entries.${i}.descartado`,'Contenido descartado o corregido',{type:'textarea',rows:2,req:1,help:'Si no descartaste nada, escríbelo.'})}
+ ${F(`w:IA.entries.${i}.aporte`,'Tu aporte intelectual propio',{type:'textarea',rows:2,req:1})}</section>`).join('')+`<button class="btn mb" data-act="addIA">+ Registrar otro uso de IA</button>`:''}
+ ${IA.uso?`<h3>Declaración generada con tus respuestas</h3><pre id="decl" style="white-space:pre-wrap;font-family:inherit;background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px">${esc(declaracionIA(w))}</pre><button class="btn sm" data-act="dlIA">Descargar declaración (.txt)</button>`:''}
+ <div id="live" class="mt" aria-live="polite"></div>${navBtns('comp','informe','Ver informe final')}`}
+ACT.addIA=()=>{CUR.IA.entries.push({id:uid(),herramienta:'',finalidad:'',instrucciones:'',verificado:'',descartado:'',aporte:''});rerender()};
+ACT.delIA=i=>{CUR.IA.entries.splice(+i,1);guardar();rerender()};
+ACT.dlIA=()=>descargar('declaracion-uso-ia.txt',declaracionIA(CUR));
+HOOK.push((rk,path)=>{if(rk==='w'&&path==='IA.uso'){if(CUR.IA.uso==='si'&&!CUR.IA.entries.length)ACT.addIA();else rerender();return true}return false});
+
+/* ---------- Portafolio ---------- */
+function vPortafolio(){const fin=S.trabajos.filter(t=>t.estado==='finalizado');
+ return `<h1>Mi portafolio EVIDA</h1><p>Aquí aparecen tus actividades finalizadas. Puedes descargarlas o imprimirlas (en el cuadro de impresión elige «Guardar como PDF»).</p>
+ <div class="row mb"><button class="btn pri" data-act="print" ${fin.length?'':'disabled'}>Imprimir / guardar PDF del portafolio</button><button class="btn" data-act="dlPortafolio" ${fin.length?'':'disabled'}>Descargar portafolio (HTML)</button></div>
+ ${fin.length?`<div class="acts">${fin.map(t=>{const sj=asigDe(t.ctx.asignaturaId);return `<article class="act"><div class="mi">${sj?`<span class="chip">${esc(sj.nombre)}</span>`:''}<span class="chip">${t.ctx.tipo}</span>${t.demo?'<span class="chip demo">Ejemplo orientativo</span>':''}</div><h3>${esc(t.ctx.titulo)}</h3><p class="hint">Actualizada: ${fechaCorta(t.actualizado)}</p><div class="row"><button class="btn sm pri" data-act="go2" data-a="${t.id}" data-b="informe">Ver informe</button></div></article>`}).join('')}</div>`:'<div class="card"><p class="empty">Todavía no has finalizado ninguna actividad. Cuando completes todas las fases, abre el informe y pulsa «Marcar como finalizada».</p></div>'}
+ <div class="print-only">${fin.map(t=>informeHTML(t,{})).join('')}</div>
+ <h2 class="mt">Copia de seguridad</h2><p class="hint">Tus datos viven solo en este navegador. Exporta una copia de vez en cuando. Este archivo también sirve para entregar tu portafolio a tu docente.</p>
+ <div class="row"><button class="btn" data-act="expTrabajos">Exportar mis actividades (.json)</button><label class="btn" for="impT">Importar actividades (.json)</label><input id="impT" class="sr" type="file" accept=".json,application/json" data-chg="impTrabajos"></div>`}
+ACT.print=()=>window.print();
+ACT.dlPortafolio=()=>{const fin=S.trabajos.filter(t=>t.estado==='finalizado');descargar('portafolio-evida.html',docHTML('Portafolio EVIDA',fin.map(t=>informeHTML(t,{})).join('')),'text/html')};
+const docHTML=(tit,body)=>`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(tit)}</title><style>${$('#appcss').textContent}body{padding:16px;max-width:980px;margin:0 auto}.rep{border:1px solid #d8d3c7}@media print{.rep{border:0}}</style></head><body>${body}</body></html>`;
+ACT.expTrabajos=()=>descargar('actividades-evida.json',JSON.stringify({tipo:'evida-trabajos',version:1,exportado:ahora(),estudiante:S.estudiante,trabajos:S.trabajos},null,1),'application/json');
+CHG.impTrabajos=(v,el)=>{const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o||!Array.isArray(o.trabajos))throw new Error('El archivo no tiene actividades EVIDA.');let n=0;
+ o.trabajos.forEach(t=>{t=Object.assign(nuevoTrabajo(),t);const i=S.trabajos.findIndex(x=>x.id===t.id);if(i<0){S.trabajos.push(t);n++}else if((t.actualizado||'')>=(S.trabajos[i].actualizado||'')){S.trabajos[i]=t;n++}});
+ guardarYa();rerender();toast(`Se importaron ${n} actividad(es).`)}catch(e){toast('No se pudo importar: '+e.message)}};r.readAsText(f);el.value=''};
+/* ====== Informe EVIDA, ayuda ====== */
+function fbSlot(w,k,o){if(o.fb==='edit')return `<div class="fb noprint">${F('w:feedback.'+k,k==='general'?'Retroalimentación general del docente':'Retroalimentación del docente — fase '+k,{type:'textarea',rows:3})}</div>`;return fbBox(w,k)}
+const tr1=(l,v)=>`<dt>${l}</dt><dd>${txt(v)?nl(v):'<span class="empty">—</span>'}</dd>`;
+function informeHTML(w,o){o=o||{};const st=estado(w),sj=asigDe(w.ctx.asignaturaId),c=w.ctx,r=retro(w),pes=pesosDe(w);
+ const badge=w.demo?'<span class="bad d">EJEMPLO ORIENTATIVO · NO ES ACTIVIDAD OFICIAL</span>':w.estado==='finalizado'?'<span class="bad f">FINALIZADA</span>':'<span class="bad b">BORRADOR</span>';
+ const sec=(k,t,b)=>`<h2 class="${k}">${t}</h2>${b}`;
+ const tabE=`<div class="tw"><table><thead><tr><th>#</th><th>Afirmación</th><th>Naturaleza</th><th>Tipo · nivel</th><th>Procedencia</th><th>Enlace / referencia</th><th>Relev. · Confiab.</th><th>Vacíos</th></tr></thead><tbody>${w.E.items.filter(x=>txt(x.afirmacion)||txt(x.fuente)).map(x=>`<tr><td>${evN(w,x.id)}</td><td>${nl(x.afirmacion)}${x.viaIA?'<br><i>(sugerido por IA; comprobado en la fuente)</i>':''}</td><td>${x.cat==='opinion'?'Opinión':'Dato verificable'}</td><td>${esc(lab(TIPOS_EV,x.tipo))}${x.nivel?'<br>'+esc(lab(NIVEL_FUENTE,x.nivel).split(' (')[0]):''}</td><td>${esc(x.fuente)}<br>${esc(x.autor)}<br>${esc(x.fecha)}</td><td>${nl(x.enlace)}</td><td>${esc(lab(ALTA_MEDIA,x.relevancia))} · ${esc(lab(ALTA_MEDIA,x.confiabilidad))}</td><td>${nl(x.vacios)}</td></tr>`).join('')||'<tr><td colspan="8" class="empty">Sin evidencias</td></tr>'}</tbody></table></div>${txt(w.E.vacios)?`<p><b>Vacíos generales:</b> ${nl(w.E.vacios)}</p>`:''}`;
+ const gI=CATS.map(k=>{const it=w.I.items.filter(x=>x.cat===k.k&&txt(x.texto));return it.length?`<p><b>${k.n}</b></p><ul>${it.map(x=>`<li>${nl(x.texto)}${(x.ev||[]).length?` <i>(${x.ev.map(id=>evN(w,id)).join(', ')})</i>`:''}</li>`).join('')}</ul>`:''}).join('');
+ const tabV=`<div class="tw"><table><thead><tr><th>Se verifica</th><th>Fuente original</th><th>Contraste</th><th>Tipo</th><th>Cómo se verificó</th><th>Resultado</th><th>Corrección / cambio</th></tr></thead><tbody>${w.V.items.filter(x=>txt(x.afirmacion)).map(x=>`<tr><td>${nl(x.afirmacion)}${x.ref?`<br><i>(${evN(w,x.ref)})</i>`:''}</td><td>${nl(x.original)}</td><td>${nl(x.contraste)}</td><td>${esc(lab(TIPOS_VER,x.tipo).split(' (')[0])}</td><td>${nl(x.como)}</td><td><b>${esc(lab(RESULTADOS,x.resultado))}</b></td><td>${nl(x.correccion)}${x.regreso?`<br><i>Regresó a ${x.regreso==='E'?'Evidencia':'Interpretación'}</i>`:''}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">Sin verificaciones</td></tr>'}</tbody></table></div>`;
+ const as=altsOk(w),cs=critsOn(w),tt=totales(w);
+ const mat=as.length&&cs.length?`<div class="tw"><table><thead><tr><th>Criterio (peso)</th><th>Evidencia que lo respalda</th>${as.map(a=>`<th>${esc(a.nombre)}</th>`).join('')}</tr></thead><tbody>${cs.map(k=>`<tr><td>${esc(k.nombre)} (${k.peso||1})</td><td>${nl(k.evidencia)}</td>${as.map(a=>`<td>${w.D.puntajes[a.id+'|'+k.id]||'—'}</td>`).join('')}</tr>`).join('')}</tbody><tfoot><tr><td colspan="2">Suma ponderada (orientativa, no decide)</td>${as.map(a=>`<td>${tt[a.id]}</td>`).join('')}</tr></tfoot></table></div>`:'<p class="empty">Matriz no completada.</p>';
+ const D=w.D;
+ const comp=c.tipo==='ACD'?`<dl class="kv">${tr1('Indicaciones del docente',c.indicaciones)}${tr1('Participación',c.participacion==='grupal'?'Grupal: '+c.integrantes:'Individual')}</dl><p><b>Aportes de la discusión</b></p><ul>${w.comp.aportes.filter(x=>txt(x.texto)).map(x=>`<li>${txt(x.autor)?'<b>'+esc(x.autor)+':</b> ':''}${nl(x.texto)}</li>`).join('')||'<li class="empty">—</li>'}</ul><dl class="kv">${tr1('Cierre reflexivo',w.comp.cierre)}</dl>`
+  :c.tipo==='APE'?`<dl class="kv">${tr1('Contexto práctico',c.contextoPractico)}</dl><p><b>Productos o evidencias generadas</b></p><ul>${w.comp.productos.filter(x=>txt(x.texto)).map(x=>`<li>${nl(x.texto)}${txt(x.enlace)?' — '+esc(x.enlace):''}</li>`).join('')||'<li class="empty">—</li>'}</ul><p><b>Observaciones</b></p><ul>${w.comp.observaciones.filter(x=>txt(x.texto)).map(x=>`<li>${txt(x.fecha)?'<b>'+esc(x.fecha)+':</b> ':''}${nl(x.texto)}</li>`).join('')||'<li class="empty">—</li>'}</ul><dl class="kv">${tr1('Prueba o contraste de la solución',w.comp.prueba)}${tr1('Decisión aplicada',w.comp.decisionAplicada)}${tr1('Evidencia de resultados',w.comp.resultados)}</dl>`
+  :c.tipo==='AA'?`<dl class="kv">${tr1('Plan personal de trabajo',c.plan)}</dl><p><b>Fuentes consultadas</b></p><ul>${w.comp.fuentes.filter(x=>txt(x.texto)).map(x=>`<li>${nl(x.texto)}${txt(x.tipo)?' ('+esc(x.tipo)+')':''}${txt(x.util)?' — '+esc(x.util):''}</li>`).join('')||'<li class="empty">—</li>'}</ul><p><b>Bitácora de avance</b></p><ul>${w.comp.bitacora.filter(x=>txt(x.texto)).map(x=>`<li>${txt(x.fecha)?'<b>'+esc(x.fecha)+':</b> ':''}${nl(x.texto)}${txt(x.horas)?' <i>('+esc(x.horas)+')</i>':''}</li>`).join('')||'<li class="empty">—</li>'}</ul><dl class="kv">${tr1('Reflexión metacognitiva',w.comp.metacognicion)}</dl>`:'';
+ const sa=todasDims(w.comp.autoeval)?puntaje20(w.comp.autoeval,pes):null,sd=todasDims(w.rubricaDoc)?puntaje20(w.rubricaDoc,pes):null;
+ const rub=`<p class="hint">Los puntajes automáticos son <b>retroalimentación orientativa</b> calculada a partir de lo registrado; <b>no son una calificación ni sustituyen la evaluación docente</b>.</p><div class="tw"><table><thead><tr><th>Dimensión</th><th>Peso</th><th>Orientación automática</th><th>Autoevaluación</th><th>Docente</th></tr></thead><tbody>${['E','V','I','D','A'].map(k=>`<tr><td><b>${k} — ${FASES.find(f=>f.k===k).n}</b></td><td>${pes[k]}</td><td>${r[k].nivel} · ${NIVELES[r[k].nivel]}${r[k].msgs.length?'<br><small>'+r[k].msgs.map(esc).join(' ')+'</small>':''}</td><td>${+w.comp.autoeval[k]?w.comp.autoeval[k]+' · '+NIVELES[w.comp.autoeval[k]]:'—'}</td><td>${o.fb==='edit'?`<select aria-label="Puntaje docente ${k}" data-bind="w:rubricaDoc.${k}" data-num="1" data-rr="1"><option value="">—</option>${[1,2,3,4].map(n=>`<option value="${n}"${+w.rubricaDoc[k]===n?' selected':''}>${n} · ${NIVELES[n]}</option>`).join('')}</select><br><small>${esc(S.config.rubrica.desc[k][w.rubricaDoc[k]]||'')}</small>`:(+w.rubricaDoc[k]?w.rubricaDoc[k]+' · '+NIVELES[w.rubricaDoc[k]]:'—')}</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="2">Total sobre 20</td><td>${r.total==null?'—':r.total} (orientativo)</td><td>${sa==null?'—':sa}</td><td>${sd==null?'—':sd}</td></tr></tfoot></table></div>`;
+ const hist=w.historial.length?`<ul class="hist">${w.historial.map(h=>histLi(h)).join('')}</ul>`:'<p class="empty">Sin cambios de posición registrados.</p>';
+ return `<article class="rep" id="rep-${w.id}"><h1>Informe EVIDA ${badge}</h1>
+ <dl class="kv">${tr1('Estudiante',w.estudiante||S.estudiante.nombre)}${tr1('Asignatura',sj?sj.nombre:'')}${tr1('Unidad / tema',[c.unidad,c.tema].filter(txt).join(' / '))}${tr1('Tipo de actividad',c.tipo?c.tipo+' — '+TIPOS[c.tipo].n:'')}${tr1('Actividad',c.titulo)}${tr1('Resultado de aprendizaje',c.ra)}${tr1('Entregable esperado',c.entregable)}${tr1('Fecha límite',c.fecha)}${tr1('Modalidad',c.participacion==='grupal'?'Grupal: '+c.integrantes:'Individual')}${tr1('Última actualización',fechaCorta(w.actualizado))}${tr1('Avance',st.pct+'% · '+st.txt)}</dl>
+ <h2 class="x">Problema, caso, reto o pregunta</h2><p>${nl(c.problema)}</p>
+ ${sec('E','E — Evidencia: ¿qué sé y con qué respaldo?',tabE+fbSlot(w,'E',o))}
+ ${sec('V','V — Verificación: ¿cómo compruebo que es confiable?',tabV+fbSlot(w,'V',o))}
+ ${sec('I','I — Interpretación: ¿qué significa la evidencia?',`<dl class="kv">${tr1('Qué significa la evidencia',w.I.significado)}${tr1('Relación entre los datos',w.I.relaciones)}</dl>${gI}<p><b>Interpretaciones alternativas</b></p><ul>${w.I.alternativas.filter(a=>txt(a.texto)).map(a=>`<li>${nl(a.texto)}</li>`).join('')||`<li class="empty">${w.I.sinAlt?'No aplica: '+esc(w.I.justAlt):'—'}</li>`}</ul><dl class="kv">${tr1('Qué no se puede concluir todavía',w.I.noConcluir)}</dl>`+fbSlot(w,'I',o))}
+ ${sec('D','D — Decisión: ¿qué concluyo, propongo o hago?',`<p><b>Alternativas consideradas:</b> ${as.map(a=>esc(a.nombre)+(txt(a.descripcion)?' ('+esc(a.descripcion)+')':'')).join('; ')||'—'}</p>${mat}<dl class="kv">${tr1('Riesgos y consecuencias',D.riesgos)}${tr1('Decisión',D.decision)}${tr1('Nivel de confianza',D.confianza)}${tr1('Carácter',D.provisional?'Decisión provisional, sujeta a revisión con nueva evidencia':'')}${tr1('Incertidumbres que permanecen',D.incertidumbres)}</dl>`+fbSlot(w,'D',o))}
+ ${sec('A','A — Argumentación: ¿por qué mi decisión es defendible?',argHTML(w)+fbSlot(w,'A',o))}
+ ${comp?sec('x','Registro de la actividad '+(c.tipo||''),comp):''}
+ ${sec('x','Cambios de posición',hist)}
+ ${sec('x','Declaración de uso de IA',`<p class="callout info">${REGLA_IA}</p><pre style="white-space:pre-wrap;font-family:inherit">${esc(declaracionIA(w))}</pre>`)}
+ ${sec('x','Rúbrica EVIDA (20 puntos)',rub)}
+ ${o.fb==='edit'?`<div class="fb noprint">${F('w:rubricaDoc.comentario','Comentario del docente sobre la rúbrica',{type:'textarea',rows:3})}${fbSlot(w,'general',o)}</div>`:(txt(w.rubricaDoc.comentario)?`<div class="fb"><b>Comentario del docente</b><p>${nl(w.rubricaDoc.comentario)}</p></div>`:'')+fbBox(w,'general')}
+ <p class="hint">Informe generado con el Asistente Académico EVIDA. EVIDA es una propuesta didáctica pendiente de validación empírica; esta herramienta no sustituye la evaluación docente.</p></article>`}
+function vInfV(w,st){const faltan=[['ctx','Contexto'],['E','Evidencia'],['V','Verificación'],['I','Interpretación'],['D','Decisión'],['A','Argumentación'],['comp','Registro de la actividad'],['IA','Declaración de IA']].filter(([k])=>!st[k].ok);
+ LIVE=null;
+ return `<div class="row mb noprint"><button class="btn pri" data-act="print">Imprimir / guardar como PDF</button><button class="btn" data-act="dlInforme">Descargar informe (HTML)</button><button class="btn" data-act="expUno">Exportar actividad (.json)</button>
+ ${w.estado==='finalizado'?`<button class="btn" data-act="reabrir">Reabrir para editar</button>`:`<button class="btn pri" data-act="finalizar" ${st.completo?'':'disabled'}>Marcar como finalizada</button>`}</div>
+ ${faltan.length?`<div class="callout warn noprint"><b class="t">Aún no está completa. Faltan fases:</b><ul>${faltan.map(([k,n])=>`<li><button class="btn sm" data-act="go" data-a="${k}">${n}</button> ${esc(st[k].err[0]||'')}</li>`).join('')}</ul>Puedes imprimir ahora como borrador.</div>`:`<div class="callout ok noprint"><b class="t">Tu actividad está completa.</b>${w.estado==='finalizado'?'Ya está finalizada y aparece en tu portafolio.':'Pulsa «Marcar como finalizada» para incluirla en tu portafolio.'}</div>`}
+ ${informeHTML(w,{})}`}
+ACT.dlInforme=()=>descargar(`informe-evida-${(CUR.ctx.titulo||'actividad').toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40)}.html`,docHTML('Informe EVIDA',informeHTML(CUR,{})),'text/html');
+ACT.expUno=()=>descargar('actividad-evida.json',JSON.stringify({tipo:'evida-trabajos',version:1,exportado:ahora(),estudiante:S.estudiante,trabajos:[CUR]},null,1),'application/json');
+ACT.finalizar=()=>{CUR.estado='finalizado';guardarYa();rerender();toast('Actividad finalizada. Ya está en tu portafolio.')};
+ACT.reabrir=()=>{CUR.estado='borrador';guardarYa();rerender()};
+
+/* ---------- Ayuda ---------- */
+function vAyuda(){return `<h1>Guía breve de instalación y uso</h1>
+ <div class="card"><h2>Instalación</h2><ol><li>Guarda el archivo <b>Asistente-Academico-EVIDA.html</b> en tu computador.</li><li>Ábrelo con un navegador actual (Chrome, Edge, Firefox o Safari). No necesita internet ni instalar nada.</li><li>Tu trabajo se guarda automáticamente <b>en ese navegador</b>. Usa siempre el mismo navegador y el mismo archivo; para cambiar de equipo usa «Exportar» e «Importar».</li><li>En el celular funciona igual: abre el archivo o alójalo en cualquier servidor web estático.</li></ol></div>
+ <div class="card"><h2>Cómo se usa (estudiante)</h2><ol><li><b>Nueva actividad</b>: elige asignatura, tipo (ACD, APE o AA) y escribe el problema.</li><li><b>E · Evidencia</b>: registra datos con su fuente, autor o enlace. Necesitas al menos una evidencia trazable.</li><li><b>V · Verificación</b>: contrasta tu evidencia y documenta cómo lo hiciste. Si aparecen contradicciones o fuentes débiles, usa «Volver y revisar Evidencia».</li><li><b>I · Interpretación</b>: explica qué significa la evidencia verificada, separa hechos, inferencias, supuestos, opiniones e hipótesis, y piensa en otra explicación.</li><li><b>D · Decisión</b>: compara alternativas con criterios explícitos y declara tu confianza.</li><li><b>A · Argumentación</b>: tesis, evidencia, razonamiento, objeción, respuesta y límites.</li><li>Completa el <b>registro de la actividad</b>, la <b>declaración de IA</b> y descarga tu <b>informe</b> (imprimir → Guardar como PDF).</li></ol></div>
+ <div class="card"><h2>Cómo se usa (docente)</h2><p>Pulsa «Docente» arriba. En <b>Asignaturas</b> cargas unidades, temas, resultados de aprendizaje y sugerencias; en <b>Actividades</b> diseñas ACD, APE y AA con evidencia admisible y ponderaciones; en <b>Rúbrica y criterios</b> editas descriptores y pesos; en <b>Portafolios</b> revisas los trabajos, dejas retroalimentación por fase y ajustas puntajes. Para distribuir tu configuración, usa <b>Datos › Exportar configuración</b> y pide a tus estudiantes importarla; ellos te devuelven su portafolio con «Exportar mis actividades» y tú lo importas en <b>Datos</b>.</p><p class="hint">Importante: el cambio de rol no tiene contraseña; la herramienta funciona de forma local. Para un uso institucional con cuentas deberá conectarse a un servidor con autenticación.</p></div>
+ <div class="card"><h2>Glosario sin tecnicismos</h2><dl class="kv"><dt>Evidencia</dt><dd>Dato o hecho que otra persona puede encontrar y comprobar.</dd><dt>Fuente primaria</dt><dd>El origen del dato (la norma, el registro, la entrevista, el informe original).</dd><dt>Fuente secundaria</dt><dd>Alguien que comenta o resume la fuente primaria.</dd><dt>Inferencia</dt><dd>Lo que tú concluyes a partir de los datos; no es el dato.</dd><dt>Supuesto</dt><dd>Algo que das por cierto sin haberlo comprobado.</dd><dt>Triangulación</dt><dd>Comprobar algo con varias fuentes independientes.</dd><dt>Trazable</dt><dd>Que se puede seguir el rastro hasta su origen.</dd><dt>Causalidad</dt><dd>Decir que algo produce otra cosa; necesita más evidencia que decir que ocurren juntas.</dd></dl></div>
+ <div class="callout info"><b class="t">${REGLA_IA}</b></div>
+ <div class="card"><h2>Alcance de EVIDA</h2><p>EVIDA es una propuesta didáctica transversal, iterativa y orientada al razonamiento crítico, la toma de decisiones fundamentada y el uso responsable de IA. Se formula como propuesta conceptual y operativa <b>pendiente de validación empírica</b>; esta herramienta no afirma resultados de eficacia ni reemplaza la evaluación docente. Fuente metodológica: Documento Fundacional «Metodología EVIDA», v1.0, 2026.</p></div>`}
+/* ====== Vistas del docente / administrador ====== */
+const OPEN={};let FILT={asig:'',est:''};
+document.addEventListener('toggle',e=>{const d=e.target;if(d.dataset&&d.dataset.oid)OPEN[d.dataset.oid]=d.open},true);
+const op=id=>OPEN[id]?' open':'';
+const lines=(arr)=>(arr||[]).join('\n');
+function vDocente(p){const s=p[1]||'asignaturas';
+ const aviso=`<div class="callout info"><b class="t">Modo docente / administrador</b>Aquí configuras asignaturas, actividades y rúbricas, y revisas portafolios. No inventes datos oficiales: esta herramienta no trae resultados de aprendizaje, fechas ni actividades de cada asignatura; los cargas tú.</div>`;
+ switch(s){case 'asignaturas':return aviso+dAsig();case 'actividades':return aviso+(p[2]?dActEd(p[2]):dActList());case 'rubrica':return dRub();case 'portafolios':return dPort();case 'revision':return dRev();case 'datos':return dDatos();default:return aviso+dAsig()}}
+
+/* ---- Asignaturas ---- */
+function dAsig(){const A=S.config.asignaturas;
+ return `<h1>Asignaturas, unidades y sugerencias</h1><p>Edita los nombres, carga unidades, temas y resultados de aprendizaje, y ajusta las sugerencias (genéricas) que ve el estudiante.</p>
+ ${A.map((a,i)=>`<details class="card" data-oid="as${a.id}"${op('as'+a.id)}><summary><b>${esc(a.nombre||'(sin nombre)')}</b> <span class="hint">· ${a.unidades.length} unidad(es)</span></summary>
+ <div class="mt">${F(`c:asignaturas.${i}.nombre`,'Nombre de la asignatura')}
+ <h3>Unidades</h3>${a.unidades.map((u,j)=>`<div class="item x"><div class="ih"><b>Unidad ${j+1}</b><button class="btn sm dng" data-act="delUni" data-a="${i}" data-b="${j}">Quitar</button></div>${F(`c:asignaturas.${i}.unidades.${j}.nombre`,'Nombre de la unidad')}<div class="grid g2"><div class="field"><label for="t${i}_${j}">Temas (uno por línea)</label><textarea id="t${i}_${j}" rows="3" data-lines="c:asignaturas.${i}.unidades.${j}.temas">${esc(lines(u.temas))}</textarea></div><div class="field"><label for="r${i}_${j}">Resultados de aprendizaje (uno por línea)</label><textarea id="r${i}_${j}" rows="3" data-lines="c:asignaturas.${i}.unidades.${j}.ra">${esc(lines(u.ra))}</textarea></div></div></div>`).join('')||'<p class="empty">Sin unidades cargadas.</p>'}
+ <button class="btn sm" data-act="addUni" data-a="${i}">+ Añadir unidad</button>
+ <h3 class="mt">Adaptación orientativa para el estudiante (editable)</h3>${F(`c:asignaturas.${i}.enfoque`,'Enfoque (separa los temas con «·»)',{type:'textarea',rows:2})}${F(`c:asignaturas.${i}.fuentes`,'Fuentes de evidencia que suelen servir',{type:'textarea',rows:2})}${F(`c:asignaturas.${i}.criterios`,'Criterios de decisión sugeridos (separados por coma)',{})}
+ ${FASES.map(f=>F(`c:asignaturas.${i}.ejemplos.${f.k}`,`Ejemplo orientativo — fase ${f.k} (${f.n})`,{type:'textarea',rows:2})).join('')}
+ <button class="btn sm dng" data-act="delAsig" data-a="${i}">Eliminar asignatura</button></div></details>`).join('')}
+ <button class="btn" data-act="addAsig">+ Añadir asignatura</button>`}
+ACT.addUni=i=>{OPEN['as'+S.config.asignaturas[+i].id]=true;S.config.asignaturas[+i].unidades.push({id:uid(),nombre:'',temas:[],ra:[]});guardar();rerender()};
+ACT.delUni=(i,j)=>{OPEN['as'+S.config.asignaturas[+i].id]=true;S.config.asignaturas[+i].unidades.splice(+j,1);guardar();rerender()};
+ACT.addAsig=()=>{const a={id:uid(),nombre:'Nueva asignatura',unidades:[],enfoque:'',fuentes:'',criterios:'',ejemplos:{E:'',I:'',V:'',D:'',A:''}};S.config.asignaturas.push(a);OPEN['as'+a.id]=true;guardar();rerender()};
+ACT.delAsig=i=>{const a=S.config.asignaturas[+i];confirmar('Eliminar asignatura',`¿Eliminar «${esc(a.nombre)}»? Las actividades configuradas y los trabajos de estudiantes que la usan perderán su asignatura.`,()=>{S.config.asignaturas.splice(+i,1);guardarYa();rerender()},'Eliminar','dng')};
+
+/* ---- Actividades ---- */
+function dActList(){const L=S.config.actividades;
+ return `<h1>Actividades configuradas</h1><p>Diseña actividades ACD, APE y AA. Los estudiantes podrán elegirlas al crear su trabajo.</p><div class="row mb"><button class="btn pri" data-act="addAct">+ Nueva actividad</button></div>
+ ${L.length?`<div class="tw"><table><thead><tr><th>Título</th><th>Asignatura</th><th>Tipo</th><th>Fecha</th><th></th></tr></thead><tbody>${L.map((a,i)=>`<tr><td>${esc(a.titulo||'(sin título)')}</td><td>${esc((asigDe(a.asignaturaId)||{}).nombre||'—')}</td><td>${a.tipo}</td><td>${esc(a.fecha||'—')}</td><td class="row"><a class="btn sm" href="#/docente/actividades/${a.id}">Editar</a><button class="btn sm" data-act="dupAct" data-a="${i}">Duplicar</button><button class="btn sm dng" data-act="delAct" data-a="${i}">Eliminar</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="card"><p class="empty">Aún no hay actividades cargadas. Los estudiantes pueden definir las suyas mientras tanto (se marcará que no son oficiales).</p></div>'}`}
+ACT.addAct=()=>{const a={id:uid(),asignaturaId:S.config.asignaturas[0]?S.config.asignaturas[0].id:'',unidad:'',tipo:'ACD',titulo:'',consigna:'',ra:'',entregable:'',fecha:'',indicaciones:'',admisibles:[],criteriosDecision:'',criteriosEval:'',pesos:{E:'',I:'',V:'',D:'',A:''}};S.config.actividades.push(a);guardarYa();nav('docente/actividades/'+a.id)};
+ACT.dupAct=i=>{const a=clone(S.config.actividades[+i]);a.id=uid();a.titulo+=' (copia)';S.config.actividades.push(a);guardarYa();rerender()};
+ACT.delAct=i=>{const a=S.config.actividades[+i];confirmar('Eliminar actividad',`¿Eliminar «${esc(a.titulo)}»?`,()=>{S.config.actividades.splice(+i,1);guardarYa();if(ruta()[2])nav('docente/actividades');else rerender()},'Eliminar','dng')};
+function dActEd(id){const i=S.config.actividades.findIndex(a=>a.id===id);if(i<0)return dActList();const a=S.config.actividades[i],as=asigDe(a.asignaturaId),un=as?as.unidades:[],p=`c:actividades.${i}.`;
+ const uSel=un.find(u=>u.nombre===a.unidad);
+ return `<p><a href="#/docente/actividades">← Volver a actividades</a></p><h1>Diseñar actividad</h1>
+ <div class="card"><div class="grid g2">${F(p+'asignaturaId','Asignatura',{type:'select',rr:1,opts:S.config.asignaturas.map(x=>[x.id,x.nombre])})}
+ ${R(p+'tipo','Tipo de actividad',Object.keys(TIPOS).map(k=>[k,k+' — '+TIPOS[k].n.split(' ').slice(0,4).join(' ')+'…']))}</div>
+ <div class="grid g2">${un.length?F(p+'unidad','Unidad',{type:'select',rr:1,opts:[['','—']].concat(un.map(u=>[u.nombre,u.nombre]))}):F(p+'unidad','Unidad o tema',{help:'La asignatura no tiene unidades cargadas.'})}${F(p+'fecha','Fecha límite',{type:'date'})}</div>
+ ${F(p+'titulo','Título de la actividad',{req:1})}${F(p+'consigna','Problema, caso, reto, pregunta o consigna',{type:'textarea',rows:4})}
+ <datalist id="dl-ra">${(uSel?uSel.ra||[]:[]).map(r=>`<option value="${esc(r)}">`).join('')}</datalist>${F(p+'ra','Resultado de aprendizaje',{list:'dl-ra',help:'Escríbelo o elige uno de los cargados en la unidad. No se inventa ninguno.'})}
+ ${F(p+'entregable','Entregable esperado')}${a.tipo==='ACD'?F(p+'indicaciones','Indicaciones del docente (ACD)',{type:'textarea',rows:3}):''}</div>
+ <div class="card"><h3>Evidencia admisible</h3><p class="hint">Marca los tipos de evidencia permitidos. Si no marcas ninguno, se admiten todos.</p><div class="radios">${TIPOS_EV.slice(1).map(t=>`<label><input type="checkbox" data-arr="c:actividades.${i}.admisibles" data-val="${t[0]}"${(a.admisibles||[]).includes(t[0])?' checked':''}> ${t[1]}</label>`).join('')}</div>
+ ${F(p+'criteriosDecision','Criterios de decisión sugeridos para esta actividad (separados por coma)',{help:'Si lo dejas vacío se usan los de la asignatura. Opciones genéricas: '+S.config.criterios.join(', ')})}
+ ${F(p+'criteriosEval','Criterios de evaluación de la actividad',{type:'textarea',rows:3})}</div>
+ <div class="card"><h3>Ponderación de la rúbrica EVIDA en esta actividad</h3><p class="hint">Déjalo vacío para usar la ponderación general. El total siempre se expresa sobre 20.</p><div class="grid g5">${['E','V','I','D','A'].map(k=>F(`${p}pesos.${k}`,`Peso ${k}`,{type:'number',min:0,max:10,ph:String(S.config.rubrica.pesos[k])})).join('')}</div></div>`}
+
+/* ---- Rúbrica ---- */
+function dRub(){const R_=S.config.rubrica;
+ return `<h1>Rúbrica EVIDA y criterios genéricos</h1><p>Cinco dimensiones valoradas de 1 a 4 (total 20 puntos). Puedes editar los descriptores y las ponderaciones. Los descriptores iniciales provienen del Documento Fundacional EVIDA v1.0.</p>
+ <div class="card"><h3>Ponderación general</h3><div class="grid g5">${['E','V','I','D','A'].map(k=>F(`c:rubrica.pesos.${k}`,`Peso ${k} — ${FASES.find(f=>f.k===k).n}`,{type:'number',min:0,max:10})).join('')}</div></div>
+ <div class="card"><h3>Descriptores por nivel</h3>${['E','V','I','D','A'].map(k=>`<h4>${k} — ${FASES.find(f=>f.k===k).n}</h4><div class="grid g4">${[1,2,3,4].map(n=>F(`c:rubrica.desc.${k}.${n}`,`${n} · ${NIVELES[n]}`,{type:'textarea',rows:3})).join('')}</div>`).join('')}<button class="btn sm" data-act="resetRub">Restablecer descriptores iniciales</button></div>
+ <div class="card"><h3>Criterios genéricos para la matriz de decisión</h3><div class="field"><label for="crg">Un criterio por línea</label><textarea id="crg" rows="8" data-lines="c:criterios">${esc(lines(S.config.criterios))}</textarea></div></div>`}
+ACT.resetRub=()=>{S.config.rubrica.desc=clone(DESC_DEF);guardar();rerender()};
+
+/* ---- Portafolios ---- */
+CHG.fAsig=v=>{FILT.asig=v;rerender()};CHG.fEst=v=>{FILT.est=v;rerender()};
+function dPort(){const T=S.trabajos.filter(t=>(!FILT.asig||t.ctx.asignaturaId===FILT.asig)&&(!FILT.est||(t.estudiante||'').toLowerCase().includes(FILT.est.toLowerCase())));
+ return `<h1>Portafolios de estudiantes</h1><p>Revisa el progreso, las alertas de campos incompletos y la declaración de uso de IA, y deja retroalimentación por fase.</p>
+ <div class="card"><div class="grid g2"><div class="field"><label for="fa">Filtrar por asignatura</label><select id="fa" data-chg="fAsig"><option value="">Todas</option>${S.config.asignaturas.map(a=>`<option value="${a.id}"${FILT.asig===a.id?' selected':''}>${esc(a.nombre)}</option>`).join('')}</select></div><div class="field"><label for="fe">Filtrar por estudiante</label><input id="fe" type="text" value="${esc(FILT.est)}" data-chg="fEst"><p class="hint">Escribe y presiona Tab o Enter.</p></div></div></div>
+ ${T.length?`<div class="tw"><table><thead><tr><th>Estudiante</th><th>Actividad</th><th>Asignatura · tipo</th><th>Avance</th><th>Fase actual</th><th>Alertas</th><th>Uso de IA</th><th>Puntaje docente /20</th><th></th></tr></thead><tbody>${T.map(t=>{const st=estado(t),al=alertas(t,st),inc=['E','V','I','D','A','IA'].filter(k=>!st[k].ok).length,sd=todasDims(t.rubricaDoc)?puntaje20(t.rubricaDoc,pesosDe(t)):null;
+  return `<tr><td>${esc(t.estudiante||'(sin nombre)')}</td><td>${esc(t.ctx.titulo||'(sin título)')}${t.demo?' <span class="chip demo">Ejemplo</span>':''}</td><td>${esc((asigDe(t.ctx.asignaturaId)||{}).nombre||'—')} · ${t.ctx.tipo||'—'}</td><td>${st.pct}% · ${st.txt}</td><td>${st.fase==='informe'?'Completa':NOMBRE_PASO[st.fase]}</td><td>${al.length?al.map(x=>`<span class="chip err">${x}</span>`).join(''):''}${inc?`<span class="chip warn">${inc} fase(s) incompleta(s)</span>`:'<span class="chip ok">Sin pendientes</span>'}</td><td>${t.IA.uso==='si'?'Sí ('+t.IA.entries.length+')':t.IA.uso==='no'?'No':'Sin declarar'}${t.IA.uso==='si'&&!st.IA.ok?' <span class="chip err">incompleta</span>':''}</td><td>${sd==null?'—':sd}${t.rubricaDoc.revisado?' ✓':''}</td><td><a class="btn sm pri" href="#/docente/revision/${t.id}">Revisar</a></td></tr>`}).join('')}</tbody></table></div>`:'<div class="card"><p class="empty">No hay portafolios para mostrar. Importa los archivos de tus estudiantes en «Datos», o carga una actividad demostrativa desde el panel del estudiante.</p></div>'}`}
+function dRev(){const w=CUR,st=estado(w);LIVE=null;
+ const inc=[['ctx','Contexto'],['E','Evidencia'],['V','Verificación'],['I','Interpretación'],['D','Decisión'],['A','Argumentación'],['comp','Registro de la actividad'],['IA','Declaración de IA']].filter(([k])=>!st[k].ok);
+ return `<p><a href="#/docente/portafolios">← Portafolios</a></p>
+ <div class="row sp"><h1>Revisión: ${esc(w.ctx.titulo||'(sin título)')}</h1><div class="row"><button class="btn" data-act="print">Imprimir / PDF</button><button class="btn" data-act="expUno">Exportar con retroalimentación (.json)</button></div></div>
+ <p>Estudiante: <b>${esc(w.estudiante||'(sin nombre)')}</b> · Avance <b>${st.pct}%</b> · ${st.txt}${w.demo?' · <b>EJEMPLO ORIENTATIVO</b>':''}</p>
+ ${inc.length?`<div class="callout warn"><b class="t">Alertas de campos incompletos</b><ul>${inc.map(([k,n])=>`<li><b>${n}</b>: ${esc(st[k].err.join(' '))}</li>`).join('')}</ul></div>`:'<div class="callout ok">Todos los campos mínimos están completos.</div>'}
+ <div class="callout info"><b class="t">Retroalimentación automática ≠ evaluación.</b>Debajo ves la orientación automática, la autoevaluación del estudiante y tu valoración. Tus puntajes y comentarios son los que cuentan.</div>
+ ${informeHTML(w,{fb:'edit'})}
+ <div class="card">${CK('w:rubricaDoc.revisado','Marcar esta revisión como completa')}<p class="hint">Para devolver tu retroalimentación al estudiante, usa «Exportar con retroalimentación» y envíale el archivo para que lo importe en «Mi portafolio».</p></div>`}
+
+/* ---- Datos ---- */
+function dDatos(){return `<h1>Datos y distribución</h1>
+ <div class="card"><h3>Configuración (asignaturas, actividades, rúbrica)</h3><p class="hint">Expórtala y compártela con tus estudiantes para que carguen las mismas actividades.</p><div class="row"><button class="btn pri" data-act="expConfig">Exportar configuración (.json)</button><label class="btn" for="impC">Importar configuración (.json)</label><input id="impC" class="sr" type="file" accept=".json,application/json" data-chg="impConfig"></div></div>
+ <div class="card"><h3>Portafolios de estudiantes</h3><p class="hint">Importa los archivos «Exportar mis actividades» que te envíen tus estudiantes. Si ya existe la misma actividad, se conserva la versión más reciente.</p><div class="row"><label class="btn" for="impT2">Importar portafolios (.json)</label><input id="impT2" class="sr" type="file" accept=".json,application/json" data-chg="impTrabajos"><button class="btn" data-act="expTrabajos">Exportar todos (.json)</button></div></div>
+ <div class="card"><h3>Borrar todo</h3><p class="hint">Elimina todos los datos de este navegador (configuración, actividades y trabajos).</p><button class="btn dng" data-act="resetAll">Borrar todos los datos…</button></div>`}
+ACT.expConfig=()=>descargar('configuracion-evida.json',JSON.stringify({tipo:'evida-config',version:1,exportado:ahora(),config:S.config},null,1),'application/json');
+CHG.impConfig=(v,el)=>{const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o||o.tipo!=='evida-config'||!o.config)throw new Error('El archivo no es una configuración EVIDA.');
+ confirmar('Importar configuración','Se reemplazará la configuración actual (asignaturas, actividades y rúbrica). Los trabajos de estudiantes no se modifican.',()=>{S.config=migrar({config:o.config}).config;guardarYa();rerender();toast('Configuración importada.')},'Importar')}catch(e){toast('No se pudo importar: '+e.message)}};r.readAsText(f);el.value=''};
+ACT.resetAll=()=>confirmar('Borrar todos los datos','Esta acción no se puede deshacer. Exporta una copia antes si la necesitas.',()=>{S=estadoInicial();S.rol='docente';guardarYa();nav('docente/asignaturas')},'Borrar todo','dng');
+/* ====== Actividad demostrativa (ejemplo orientativo, no oficial; datos ficticios) ====== */
+function crearDemo(){const w=nuevoTrabajo();const id=()=>uid();w.demo=true;w.estudiante=S.estudiante.nombre||'Estudiante de ejemplo';
+ Object.assign(w.ctx,{asignaturaId:'emprendimiento',tipo:'APE',unidad:'Ejemplo orientativo',tema:'Decisión de un servicio nuevo',titulo:'EJEMPLO ORIENTATIVO (no es actividad oficial): ¿Conviene a una cafetería universitaria ficticia ofrecer entrega a domicilio?',
+  problema:'Caso ficticio creado solo para ilustrar el recorrido EVIDA. Una cafetería universitaria imaginaria nota que vende menos al mediodía y debe decidir si ofrece entrega a domicilio dentro del campus, una reserva para retiro u otra opción.',entregable:'Informe EVIDA (ejemplo)',participacion:'individual',contextoPractico:'Caso simulado dentro de un campus imaginario; no existen datos reales.'});
+ const e1=id(),e2=id(),e3=id(),e4=id();
+ w.E.items=[
+  {id:e1,afirmacion:'[Simulado] En una encuesta ficticia a 20 estudiantes, 12 dicen que dejan de comprar al mediodía por la fila.',cat:'dato',tipo:'cuantitativa',nivel:'primaria',fuente:'Encuesta simulada para este ejemplo',autor:'Equipo de ejemplo',fecha:'2026-01-10',enlace:'Archivo ilustrativo: encuesta_ejemplo.xlsx (no existe)',relevancia:'alta',confiabilidad:'media',vacios:'Muestra pequeña y no aleatoria.',viaIA:false},
+  {id:e2,afirmacion:'[Simulado] El reglamento interno del campus imaginario exige autorización para que ingresen repartidores externos.',cat:'dato',tipo:'normativa',nivel:'primaria',fuente:'Reglamento ficticio del campus (ejemplo)',autor:'Administración ficticia',fecha:'2025',enlace:'Art. ficticio 12, documento de ejemplo',relevancia:'alta',confiabilidad:'alta',vacios:'',viaIA:false},
+  {id:e3,afirmacion:'[Opinión de ejemplo] Creo que a los estudiantes les gusta pedir desde el celular.',cat:'opinion',tipo:'',nivel:'',fuente:'Mi impresión personal',autor:'',fecha:'',enlace:'',relevancia:'baja',confiabilidad:'baja',vacios:'',viaIA:false},
+  {id:e4,afirmacion:'[Simulado] Una herramienta de IA sugirió que el costo del reparto suele ser el principal riesgo de este tipo de servicio.',cat:'dato',tipo:'documental',nivel:'secundaria',fuente:'Informe sectorial ficticio (ejemplo)',autor:'Gremio ficticio',fecha:'2025',enlace:'https://ejemplo.invalid/informe-ficticio',relevancia:'media',confiabilidad:'baja',vacios:'Solo cubre ciudades grandes.',viaIA:true}];
+ w.E.vacios='No hay datos sobre disposición a pagar un recargo por entrega (ejemplo).';
+ w.I.significado='Los datos simulados sugieren que la fila puede ser una barrera de compra al mediodía y que ingresar repartidores externos requiere permiso.';
+ w.I.relaciones='La fila larga y la caída de ventas ocurren en el mismo horario, pero no sabemos si una explica la otra.';
+ w.I.items=[
+  {id:id(),cat:'hecho',texto:'12 de 20 encuestados (simulado) dicen evitar la fila al mediodía.',ev:[e1]},
+  {id:id(),cat:'hecho',texto:'El ingreso de repartidores externos requiere autorización.',ev:[e2]},
+  {id:id(),cat:'inferencia',texto:'La fila larga podría ser una barrera de compra importante.',ev:[e1]},
+  {id:id(),cat:'supuesto',texto:'Los estudiantes pagarían un pequeño recargo por recibir su pedido.',ev:[]},
+  {id:id(),cat:'opinion',texto:'A los estudiantes les gusta pedir desde el celular.',ev:[]},
+  {id:id(),cat:'hipotesis',texto:'Si se reduce la espera, aumentarán las ventas del mediodía.',ev:[e1]}];
+ w.I.alternativas=[{id:id(),texto:'Las ventas podrían bajar por precio o por variedad del menú, no por la fila.'}];
+ w.I.noConcluir='No se puede concluir todavía que la fila sea la causa de la caída de ventas, ni que el recargo sea aceptado.';
+ const v1=id();
+ w.V.items=[
+  {id:v1,ref:e1,afirmacion:'12 de 20 estudiantes evitan la fila (simulado).',original:'Encuesta simulada — Equipo de ejemplo',contraste:'Conteo simulado de personas que abandonan la fila en tres días distintos',tipo:'datos',como:'Comparé lo declarado en la encuesta con un conteo simulado de abandonos en tres mediodías (ejemplo).',resultado:'matiza',correccion:'Reduje mi afirmación: la fila influye, pero no explica toda la caída de ventas.',regreso:'E'},
+  {id:id(),ref:e2,afirmacion:'El ingreso de repartidores requiere autorización.',original:'Reglamento ficticio del campus',contraste:'Consulta simulada a la administración sobre la vigencia de la norma',tipo:'primaria',como:'Revisé la fecha de la norma y pregunté (simulado) si seguía vigente.',resultado:'confirma',correccion:'',regreso:''},
+  {id:id(),ref:e4,afirmacion:'El costo de reparto es el principal riesgo.',original:'Informe sectorial ficticio (sugerido por IA)',contraste:'Dos cotizaciones ficticias de mensajería local',tipo:'contradictoria',como:'Busqué cotizaciones que contradijeran la idea; las comparé con el informe.',resultado:'noconcluyente',correccion:'Lo trato como riesgo posible, no como hecho.',regreso:''}];
+ w.historial=[{id:id(),fecha:ahora(),tipo:'regreso',fase:'V → E',destino:'E',motivo:'El conteo simulado matizó el dato de la encuesta; ajusté cómo lo registré.',cerrado:true},
+  {id:id(),fecha:ahora(),tipo:'cambio',fase:'V',antes:'La fila explica la caída de ventas.',despues:'La fila es una de varias posibles causas.',evidencia:'Conteo simulado de abandonos (verificación 1).'}];
+ const a1=id(),a2=id(),a3=id(),c1=id(),c2=id(),c3=id(),c4=id();
+ w.D.alternativas=[{id:a1,nombre:'Entrega a domicilio propia',descripcion:'Repartidor propio dentro del campus'},{id:a2,nombre:'Reserva anticipada para retiro',descripcion:'Pedir antes y retirar sin fila'},{id:a3,nombre:'No cambiar el servicio',descripcion:'Mantener la operación actual'}];
+ w.D.criterios=[{id:c1,nombre:'Viabilidad',peso:3,on:true,evidencia:'E2: requiere autorización para repartidores externos.'},{id:c2,nombre:'Costo',peso:2,on:true,evidencia:'E4 (confiabilidad baja) y cotizaciones simuladas.'},{id:c3,nombre:'Riesgo',peso:2,on:true,evidencia:'Verificación 3: riesgo de costo no concluyente.'},{id:c4,nombre:'Impacto',peso:2,on:true,evidencia:'E1: 12 de 20 evitan la fila (simulado).'}];
+ const P=(a,c,n)=>{w.D.puntajes[a+'|'+c]=n};[[a1,[2,2,2,4]],[a2,[4,4,4,3]],[a3,[5,5,3,1]]].forEach(([a,r])=>[c1,c2,c3,c4].forEach((c,i)=>P(a,c,r[i])));
+ w.D.riesgos='La reserva podría no usarse y el piloto costaría tiempo del personal. Si se decide mal, se pierde un mes de ventas del mediodía.';
+ w.D.decision='Hacer un piloto de un mes de reserva anticipada para retiro antes de decidir sobre la entrega a domicilio.';
+ w.D.confianza='medio';w.D.incertidumbres='No sabemos si el recargo sería aceptado ni cuánto influye el precio frente a la fila.';w.D.provisional=true;
+ Object.assign(w.A,{tesis:'Conviene probar primero una reserva anticipada para retiro, porque responde a la fila con menor costo y riesgo que la entrega a domicilio.',evidenciaIds:[e1,e2],evidenciaClave:'E1 (12 de 20 evitan la fila, simulado, matizada por el conteo) y E2 (la entrega externa requiere autorización).',razonamiento:'Si la fila es una barrera, la reserva la elimina sin necesitar permisos ni repartidores; la entrega a domicilio depende de una autorización y de un costo aún no concluyente.',criterios:'Viabilidad, Costo, Riesgo, Impacto',objecion:'La reserva no atiende a quienes no quieren desplazarse hasta la cafetería.',respuesta:'Es cierto, pero no hay evidencia de que sea un grupo grande; el piloto permitirá medirlo antes de invertir en reparto.',limitaciones:'Datos simulados, muestra pequeña y un solo campus imaginario.',nuevaEvidencia:'Una encuesta mayor, datos reales de abandono de fila o cotizaciones definitivas de reparto.'});
+ w.IA={uso:'si',entries:[{id:id(),herramienta:'Asistente de IA (ejemplo)',finalidad:'Proponer palabras clave y riesgos posibles',instrucciones:'Le pedí posibles riesgos de un servicio de entrega en un campus y qué evidencia buscar; no le pedí que decidiera.',verificado:'Busqué el riesgo de costo en cotizaciones ficticias y lo registré como no concluyente.',descartado:'Descarté una cifra de ventas que no pude comprobar en ninguna fuente.',aporte:'Elegí las fuentes, verifiqué, comparé alternativas y escribí la decisión y el argumento.'}]};
+ Object.assign(w.comp,{productos:[{id:id(),texto:'Hoja de conteo de fila (simulada)',enlace:'conteo_ejemplo.xlsx (no existe)'}],observaciones:[{id:id(),fecha:'2026-01-12',texto:'[Simulado] Al mediodía la fila supera 10 minutos y varias personas se retiran.'}],prueba:'Se plantea un piloto de un mes de reserva anticipada y comparar abandono de fila antes y después (simulado).',decisionAplicada:'Piloto de reserva anticipada (simulado).',resultados:'[Simulado] El abandono de fila baja de forma visible durante el piloto; el resultado es solo ilustrativo.'});
+ return w}
+/* ====== Arranque ====== */
+S=cargar();
+if(!location.hash)location.replace('#/panel');
+render();
+window.addEventListener('beforeunload',guardarYa);
+</script></body></html>
