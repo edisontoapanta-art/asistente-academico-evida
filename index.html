@@ -322,7 +322,7 @@ function nuevoTrabajo(){return{id:uid(),creado:ahora(),actualizado:ahora(),estad
  A:{tesis:'',evidenciaIds:[],evidenciaClave:'',razonamiento:'',criterios:'',objecion:'',respuesta:'',limitaciones:'',nuevaEvidencia:''},
  IA:{uso:'',entries:[]},
  comp:{aportes:[],cierre:'',productos:[],observaciones:[],prueba:'',decisionAplicada:'',resultados:'',fuentes:[],bitacora:[],metacognicion:'',autoeval:{E:'',I:'',V:'',D:'',A:''},autoevalTxt:''},
- historial:[],feedback:{E:'',I:'',V:'',D:'',A:'',general:''},rubricaDoc:{E:'',I:'',V:'',D:'',A:'',comentario:'',revisado:false}}}
+ prompts:[],historial:[],feedback:{E:'',I:'',V:'',D:'',A:'',general:''},rubricaDoc:{E:'',I:'',V:'',D:'',A:'',comentario:'',revisado:false}}}
 
 /* ---- búsqueda de datos configurados ---- */
 const asigDe=id=>S.config.asignaturas.find(a=>a.id===id);
@@ -405,7 +405,10 @@ const IA_CAMPOS=[['herramienta','herramienta utilizada'],['finalidad','finalidad
 const iaFalta=e=>IA_CAMPOS.filter(([k])=>!txt(e[k])).map(x=>x[1]);
 function vIA(w){const IA=w.IA,err=[];
  if(!IA.uso)err.push('Indica si usaste o no inteligencia artificial en esta actividad.');
- if(IA.uso==='si'){if(!IA.entries.length)err.push('Registra al menos una herramienta de IA utilizada.');IA.entries.forEach((e,i)=>{const f=iaFalta(e);if(f.length)err.push(`Declaración de IA n.º ${i+1} incompleta: falta ${f.join(', ')}.`)})}
+ if(IA.uso==='si'){if(!IA.entries.length)err.push('Registra al menos una herramienta de IA utilizada.');IA.entries.forEach((e,i)=>{const f=iaFalta(e);if(f.length)err.push(`Declaración de IA n.º ${i+1} incompleta: falta ${f.join(', ')}.`)});
+  const po=promptsOrden(w);if(!po.length)err.push('Registra la secuencia de prompts que usaste (bitácora de prompts), con la verificación de cada respuesta.');
+  po.forEach(({p},n)=>{const f=promptFalta(p);if(f.length)err.push(`Prompt n.º ${n+1} (fase ${p.fase}): falta ${f.join(' y ')}.`)})}
+ if(IA.uso==='no'&&(w.prompts||[]).length)err.push('Declaraste no usar IA pero hay prompts registrados: cambia la declaración o quita los prompts.');
  return{ok:!err.length,err,warn:[]}}
 function vComp(w){const c=w.comp,t=w.ctx.tipo,err=[],warn=[];
  if(t==='ACD'){if(!txt(c.cierre))err.push('Escribe el cierre reflexivo.');if(!c.aportes.some(a=>txt(a.texto)))warn.push('Aún no registraste aportes de la discusión.')}
@@ -413,8 +416,10 @@ function vComp(w){const c=w.comp,t=w.ctx.tipo,err=[],warn=[];
  else if(t==='AA'){if(!c.fuentes.some(a=>txt(a.texto)))err.push('Registra al menos una fuente consultada.');if(!c.bitacora.some(a=>txt(a.texto)))err.push('Registra al menos una entrada en la bitácora de avance.');if(!txt(c.metacognicion))err.push('Escribe tu reflexión metacognitiva.');if(!todasDims(c.autoeval))err.push('Completa la autoevaluación con la rúbrica EVIDA (las cinco dimensiones).')}
  else err.push('Selecciona el tipo de actividad en el contexto.');
  return{ok:!err.length,err,warn}}
-const NOMBRE_PASO={ctx:'Contexto',E:'Evidencia',I:'Interpretación',V:'Verificación',D:'Decisión',A:'Argumentación',comp:'Registro de la actividad',IA:'Uso de IA',informe:'Informe'};
-function estado(w){const r={ctx:vCtx(w),E:vE(w),I:vI(w),V:vV(w),D:vD(w),A:vA(w),comp:vComp(w),IA:vIA(w)};
+const NOMBRE_PASO={ctx:'Contexto',E:'Evidencia',V:'Verificación',I:'Interpretación',D:'Decisión',A:'Argumentación',comp:'Registro de la actividad',IA:'Uso de IA',informe:'Documento final'};
+const promptsOrden=w=>(w.prompts||[]).map((p,i)=>({p,i})).sort((a,b)=>ORDEN.indexOf(a.p.fase)-ORDEN.indexOf(b.p.fase)||a.i-b.i);
+const promptFalta=p=>[!txt(p.prompt)&&'el texto del prompt',!txt(p.verificacion)&&'cómo verificaste la respuesta'].filter(Boolean);
+function estado(w){const r={ctx:vCtx(w),E:vE(w),V:vV(w),I:vI(w),D:vD(w),A:vA(w),comp:vComp(w),IA:vIA(w)};
  const ks=Object.keys(r),n=ks.filter(k=>r[k].ok).length;r.pct=Math.round(n/ks.length*100);r.completo=n===ks.length;
  r.fase=ORDEN.find(k=>!r[k].ok)||(!r.comp.ok?'comp':!r.IA.ok?'IA':'informe');
  r.txt=w.estado==='finalizado'?'Terminada':(w.E.items.some(x=>txt(x.afirmacion))?'En proceso':'Pendiente');
@@ -424,7 +429,7 @@ function alertas(w,st){const a=[];
  const sinF=w.E.items.some(x=>txt(x.afirmacion)&&!txt(x.fuente));
  if(sinF||(w.ctx.titulo&&!w.E.items.some(esTrazable)&&st.ctx.ok&&w.E.items.length))a.push('Falta de fuentes');
  if(st.E.ok&&!st.V.ok)a.push('Falta de verificación');
- if(st.V.ok&&!st.D.ok)a.push('Falta de decisión');
+ if(st.I.ok&&!st.D.ok)a.push('Falta de decisión');
  if(st.A.ok||w.IA.uso==='si'){if(!st.IA.ok)a.push('Declaración de IA incompleta')}
  return a}
 
@@ -529,7 +534,7 @@ function topInner(w){const st=estado(w),paso=(ruta()[2]||'ctx'),sj=asigDe(w.ctx.
  const ar='<li aria-hidden="true"><span class="arrow">→</span></li>';
  return `<div class="row sp"><div><h1>${esc(w.ctx.titulo||'Actividad sin título')}</h1><div class="meta">${sj?esc(sj.nombre)+' · ':''}${w.ctx.tipo||'Tipo sin elegir'} · Estado: ${st.txt}${w.demo?' · <b>EJEMPLO ORIENTATIVO</b>':''}</div></div>
   <div class="row" style="min-width:220px;flex:1;max-width:360px"><div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${st.pct}" aria-label="Avance de la actividad"><i style="width:${st.pct}%"></i></div><b>${st.pct}%</b></div></div>
-  <nav aria-label="Fases EVIDA"><ol class="steps">${step('ctx','0','Contexto','x')}${ar}${step('E','E','Evidencia')}${ar}${step('V','V','Verificación')}<li><span class="cycle" title="Si la verificación revela errores, vuelve a Evidencia" aria-label="ciclo: se puede volver a Evidencia">↺</span></li>${ar}${step('I','I','Interpretación')}${ar}${step('D','D','Decisión')}${ar}${step('A','A','Argumentación')}<li class="sepbar" aria-hidden="true"></li>${step('comp','✎','Registro '+(w.ctx.tipo||''),'x')}${step('IA','IA','Uso de IA','x')}${step('informe','▤','Informe','x')}</ol></nav>`}
+  <nav aria-label="Fases EVIDA"><ol class="steps">${step('ctx','0','Contexto','x')}${ar}${step('E','E','Evidencia')}${ar}${step('V','V','Verificación')}<li><span class="cycle" title="Si la verificación revela errores, vuelve a Evidencia" aria-label="ciclo: se puede volver a Evidencia">↺</span></li>${ar}${step('I','I','Interpretación')}${ar}${step('D','D','Decisión')}${ar}${step('A','A','Argumentación')}<li class="sepbar" aria-hidden="true"></li>${step('comp','✎','Registro '+(w.ctx.tipo||''),'x')}${step('IA','IA','Uso de IA','x')}${step('informe','▤','Documento final','x')}</ol></nav>`}
 
 /* ---- cabecera general ---- */
 function headerHTML(p){const doc=S.rol==='docente';
@@ -539,7 +544,7 @@ function headerHTML(p){const doc=S.rol==='docente';
  <nav class="nav" aria-label="Principal">${items.map(([k,l])=>`<a href="#/${k}"${cur(k)}>${l}</a>`).join('')}</nav>
  <div class="rol" role="group" aria-label="Rol"><button data-act="rol" data-a="estudiante" aria-pressed="${!doc}">Estudiante</button><button data-act="rol" data-a="docente" aria-pressed="${doc}">Docente</button></div></div>
  <div class="wrap"><div class="savestat" id="savestat">${memOnly?'Sin almacenamiento del navegador: exporta una copia para no perder tu trabajo':'Los datos se guardan automáticamente en este navegador'}</div></div></header>`}
-function footHTML(){return `<footer class="foot wrap"><p><b>EVIDA</b> (Evidencia · Interpretación · Verificación · Decisión · Argumentación) es una propuesta didáctica transversal, iterativa y orientada al razonamiento crítico, la toma de decisiones fundamentada y el uso responsable de IA. Se presenta como propuesta metodológica pendiente de validación empírica (Documento Fundacional v1.0, 2026; autor de la propuesta: Ing. Edison Oswaldo Toapanta Mendoza, MAE). Esta herramienta ofrece retroalimentación orientativa y <b>no sustituye la evaluación docente</b>.</p></footer>`}
+function footHTML(){return `<footer class="foot wrap"><p><b>EVIDA</b> (Evidencia · Verificación · Interpretación · Decisión · Argumentación) es una propuesta didáctica transversal, iterativa y orientada al razonamiento crítico, la toma de decisiones fundamentada y el uso responsable de IA. Se presenta como propuesta metodológica pendiente de validación empírica (Documento Fundacional v1.0, 2026; autor de la propuesta: Ing. Edison Oswaldo Toapanta Mendoza, MAE). Esta herramienta ofrece retroalimentación orientativa y <b>no sustituye la evaluación docente</b>.</p></footer>`}
 const reglaIA=()=>`<div class="iarule noprint" role="note"><div class="wrap"><b>Regla EVIDA-IA</b><span>${REGLA_IA}</span></div></div>`;
 
 /* ---- enrutador ---- */
@@ -657,7 +662,7 @@ function vEV(w,st){if(!w.E.items.length)w.E.items.push(newEv());
  <button class="btn mb" data-act="addEv">+ Añadir otra evidencia</button>
  <div class="card">${F('w:E.vacios','Vacíos generales de información',{type:'textarea',rows:2,help:'¿Qué información importante todavía no tienes o no pudiste encontrar?'})}</div>
  <details class="help"><summary>Ver como matriz (solo lectura)</summary><div class="tw"><table><thead><tr><th>#</th><th>Afirmación</th><th>Naturaleza</th><th>Tipo</th><th>Nivel</th><th>Fuente · autor · fecha</th><th>Enlace</th><th>Relev.</th><th>Confiab.</th></tr></thead><tbody>${w.E.items.map((x,i)=>`<tr><td>E${i+1}</td><td>${nl(x.afirmacion)}</td><td>${x.cat==='opinion'?'Opinión':'Dato'}</td><td>${esc(lab(TIPOS_EV,x.tipo))}</td><td>${esc((lab(NIVEL_FUENTE,x.nivel)||'').split(' (')[0])}</td><td>${esc(x.fuente)} · ${esc(x.autor)} · ${esc(x.fecha)}</td><td>${esc(x.enlace)}</td><td>${esc(lab(ALTA_MEDIA,x.relevancia))}</td><td>${esc(lab(ALTA_MEDIA,x.confiabilidad))}</td></tr>`).join('')}</tbody></table></div></details>
- <div id="live" aria-live="polite"></div>${navBtns('ctx','V')}`}
+ ${promptPanel(w,'E')}<div id="live" aria-live="polite"></div>${navBtns('ctx','V')}`}
 ACT.addEv=()=>{CUR.E.items.push(newEv());rerender()};
 ACT.delEv=i=>{const x=CUR.E.items[+i];const f=()=>{CUR.E.items.splice(+i,1);guardar();rerender()};if(txt(x.afirmacion)||txt(x.fuente))confirmar('Quitar evidencia','¿Quitar esta evidencia? Se perderán sus datos.',f,'Quitar','dng');else f()};
 
@@ -681,7 +686,7 @@ function vIV(w,st){const I=w.I;
  <button class="btn sm" data-act="addAlt">+ Añadir alternativa</button>
  ${CK('w:I.sinAlt','Este problema no admite otra interpretación (explícalo abajo)',{rr:1})}${I.sinAlt?F('w:I.justAlt','¿Por qué no aplica?',{type:'textarea',rows:2}):''}</div>
  <div class="card">${F('w:I.noConcluir','¿Qué no se puede concluir todavía?',{type:'textarea',rows:3,req:1,help:'Declarar lo que no sabes es parte de pensar bien.'})}</div>
- <div id="live" aria-live="polite"></div>${navBtns('V','D')}`}
+ ${promptPanel(w,'I')}<div id="live" aria-live="polite"></div>${navBtns('V','D')}`}
 ACT.addI=k=>{CUR.I.items.push({id:uid(),cat:k,texto:'',ev:[]});rerender()};
 ACT.delI=i=>{CUR.I.items.splice(+i,1);guardar();rerender()};
 ACT.addAlt=()=>{CUR.I.alternativas.push({id:uid(),texto:''});rerender()};
@@ -709,7 +714,7 @@ function vVV(w,st){if(!w.V.items.length)w.V.items.push(newVer());
  ${w.V.items.map((x,i)=>verCard(w,x,i)).join('')}
  <div class="row mb"><button class="btn" data-act="addVer">+ Añadir otra verificación</button><button class="btn" data-act="regCambio">Registrar cambio de posición</button></div>
  <h3>Historial de cambios de posición</h3>${w.historial.length?`<ul class="hist">${w.historial.slice().reverse().map(h=>histLi(h)).join('')}</ul>`:'<p class="empty">Sin registros todavía.</p>'}
- <div id="live" aria-live="polite"></div>${navBtns('E','I')}`}
+ ${promptPanel(w,'V')}<div id="live" aria-live="polite"></div>${navBtns('E','I')}`}
 ACT.addVer=()=>{CUR.V.items.push(newVer());rerender()};
 ACT.delVer=i=>{CUR.V.items.splice(+i,1);guardar();rerender()};
 HOOK.push((rk,path)=>{const m=/^V\.items\.(\d+)\.ref$/.exec(path);if(rk==='w'&&m){const v=CUR.V.items[+m[1]],e=CUR.E.items.find(x=>x.id===v.ref);if(e){if(!txt(v.afirmacion))v.afirmacion=txt(e.afirmacion);if(!txt(v.original))v.original=[e.fuente,e.autor].filter(txt).join(' — ')}rerender();return true}
@@ -746,7 +751,7 @@ function vDV(w,st){ensureD(w);const D=w.D;
  <div class="card"><h3>4. Decisión</h3>${F('w:D.riesgos','Riesgos y consecuencias',{type:'textarea',rows:3,req:1})}${F('w:D.decision','Decisión, solución, recomendación o conclusión',{type:'textarea',rows:3,req:1})}
  ${R('w:D.confianza','Nivel de confianza en tu decisión',[['bajo','Bajo'],['medio','Medio'],['alto','Alto']])}
  ${F('w:D.incertidumbres','Incertidumbres que permanecen',{type:'textarea',rows:2,req:1})}${CK('w:D.provisional','Mi decisión es provisional y la revisaré si aparece nueva evidencia')}</div>
- <div id="live" aria-live="polite"></div>${navBtns('I','A')}`}
+ ${promptPanel(w,'D')}<div id="live" aria-live="polite"></div>${navBtns('I','A')}`}
 ACT.addAltD=()=>{CUR.D.alternativas.push({id:uid(),nombre:'',descripcion:''});rerender()};
 ACT.delAltD=i=>{CUR.D.alternativas.splice(+i,1);guardar();rerender()};
 ACT.addCrit=()=>{const v=txt($('#nc').value);if(!v)return $('#nc').focus();CUR.D.criterios.push({id:uid(),nombre:v,peso:1,on:true,evidencia:''});guardar();rerender()};
@@ -765,7 +770,7 @@ function vAV(w,st){LIVE=()=>{const s=estado(w);const b=$('#live');if(b)b.innerHT
  <div class="card">${F('w:A.objecion','Una objeción o contraargumento relevante',{type:'textarea',rows:2,req:1})}${F('w:A.respuesta','Respuesta a la objeción',{type:'textarea',rows:3,req:1})}
  ${F('w:A.limitaciones','Limitaciones de tu conclusión',{type:'textarea',rows:2,req:1})}${F('w:A.nuevaEvidencia','¿Qué nueva evidencia podría modificar tu decisión?',{type:'textarea',rows:2,req:1})}</div>
  <h3>Vista del argumento</h3><div id="argprev">${argHTML(w)}</div>
- <div id="live" class="mt" aria-live="polite"></div>${navBtns('D',null)}
+ ${promptPanel(w,'A')}<div id="live" class="mt" aria-live="polite"></div>${navBtns('D',null)}
  <div class="row sp mt noprint"><span></span><button class="btn pri" data-act="sigPaso" data-a="comp">Continuar: registro de la actividad →</button></div>`}
 ACT.criteriosD=()=>{const n=critsOn(CUR).map(c=>c.nombre).join(', ');if(!n)return toast('Aún no marcaste criterios en la fase D.');CUR.A.criterios=n;guardar();rerender()};
 ACT.sigPaso=p=>{const v=estado(CUR);if(!v.A.ok){SHOWERR=true;live();toast('Completa la argumentación para continuar.');return}nav('trabajo/'+CUR.id+'/'+p)};
@@ -806,7 +811,7 @@ function autoevalAuto(w,r){return `<div class="callout info"><b class="t">Retroa
 function declaracionIA(w){const IA=w.IA,nom=w.estudiante||S.estudiante.nombre||'el/la estudiante',tit=w.ctx.titulo||'la actividad';
  if(IA.uso==='no')return `Yo, ${nom}, declaro que no utilicé herramientas de inteligencia artificial para desarrollar la actividad «${tit}». La responsabilidad intelectual de la verificación, la decisión y la argumentación es mía.`;
  if(IA.uso!=='si')return 'Declaración pendiente.';
- return `Yo, ${nom}, declaro que utilicé inteligencia artificial en la actividad «${tit}» del siguiente modo. La responsabilidad intelectual de la verificación, la decisión y la argumentación es mía.\n\n`+IA.entries.map((e,i)=>`Uso ${i+1}\n• Herramienta: ${txt(e.herramienta)||'(pendiente)'}\n• Finalidad: ${txt(e.finalidad)||'(pendiente)'}\n• Instrucciones dadas (resumen): ${txt(e.instrucciones)||'(pendiente)'}\n• Contenido verificado externamente: ${txt(e.verificado)||'(pendiente)'}\n• Contenido descartado o corregido: ${txt(e.descartado)||'(pendiente)'}\n• Mi aporte intelectual propio: ${txt(e.aporte)||'(pendiente)'}`).join('\n\n')}
+ return `Yo, ${nom}, declaro que utilicé inteligencia artificial en la actividad «${tit}» del siguiente modo. La responsabilidad intelectual de la verificación, la decisión y la argumentación es mía. Prompts registrados en la bitácora: ${(w.prompts||[]).length}.\n\n`+IA.entries.map((e,i)=>`Uso ${i+1}\n• Herramienta: ${txt(e.herramienta)||'(pendiente)'}\n• Finalidad: ${txt(e.finalidad)||'(pendiente)'}\n• Instrucciones dadas (resumen): ${txt(e.instrucciones)||'(pendiente)'}\n• Contenido verificado externamente: ${txt(e.verificado)||'(pendiente)'}\n• Contenido descartado o corregido: ${txt(e.descartado)||'(pendiente)'}\n• Mi aporte intelectual propio: ${txt(e.aporte)||'(pendiente)'}`).join('\n\n')}
 function vIAV(w,st){const IA=w.IA;
  LIVE=()=>{const s=estado(w);const b=$('#live');if(b)b.innerHTML=alertBox(s.IA,SHOWERR);const d=$('#decl');if(d)d.textContent=declaracionIA(w)};
  return `${plainHead('x','IA','Uso responsable de IA','Declara con transparencia si usaste IA y cómo verificaste lo que te dio.')}${fbBox(w,'general')}
@@ -818,6 +823,7 @@ function vIAV(w,st){const IA=w.IA;
  ${F(`w:IA.entries.${i}.verificado`,'Contenido generado que verificaste externamente (y cómo)',{type:'textarea',rows:2,req:1})}
  ${F(`w:IA.entries.${i}.descartado`,'Contenido descartado o corregido',{type:'textarea',rows:2,req:1,help:'Si no descartaste nada, escríbelo.'})}
  ${F(`w:IA.entries.${i}.aporte`,'Tu aporte intelectual propio',{type:'textarea',rows:2,req:1})}</section>`).join('')+`<button class="btn mb" data-act="addIA">+ Registrar otro uso de IA</button>`:''}
+ ${IA.uso==='si'?promptPanel(w,null):''}
  ${IA.uso?`<h3>Declaración generada con tus respuestas</h3><pre id="decl" style="white-space:pre-wrap;font-family:inherit;background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px">${esc(declaracionIA(w))}</pre><button class="btn sm" data-act="dlIA">Descargar declaración (.txt)</button>`:''}
  <div id="live" class="mt" aria-live="polite"></div>${navBtns('comp','informe','Ver informe final')}`}
 ACT.addIA=()=>{CUR.IA.entries.push({id:uid(),herramienta:'',finalidad:'',instrucciones:'',verificado:'',descartado:'',aporte:''});rerender()};
@@ -840,6 +846,22 @@ ACT.expTrabajos=()=>descargar('actividades-evida.json',JSON.stringify({tipo:'evi
 CHG.impTrabajos=(v,el)=>{const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o||!Array.isArray(o.trabajos))throw new Error('El archivo no tiene actividades EVIDA.');let n=0;
  o.trabajos.forEach(t=>{t=Object.assign(nuevoTrabajo(),t);const i=S.trabajos.findIndex(x=>x.id===t.id);if(i<0){S.trabajos.push(t);n++}else if((t.actualizado||'')>=(S.trabajos[i].actualizado||'')){S.trabajos[i]=t;n++}});
  guardarYa();rerender();toast(`Se importaron ${n} actividad(es).`)}catch(e){toast('No se pudo importar: '+e.message)}};r.readAsText(f);el.value=''};
+
+/* ---------- Bitácora de prompts (secuencia E → V → I → D → A) ---------- */
+const abierto=(id,def)=>OPEN[id]!==undefined?OPEN[id]:def;
+function promptPanel(w,fase){const L=promptsOrden(w).filter(o=>!fase||o.p.fase===fase),id='pp'+(fase||'all');
+ const t=fase?`Prompts de IA usados en la fase ${fase} — ${FASES.find(f=>f.k===fase).n} (opcional)`:'Bitácora de prompts de IA, en secuencia E → V → I → D → A';
+ return `<details class="help" data-oid="${id}"${abierto(id,L.length>0)?' open':''}><summary>${t}${L.length?' · '+L.length:''}</summary>
+ <p class="hint">Copia el prompt tal cual lo escribiste, resume la respuesta y explica cómo la verificaste en una fuente real. Si usas IA, esta bitácora es obligatoria y se incluye en el documento final.</p>
+ ${L.map(({p,i},n)=>`<div class="item ${p.fase}"><div class="ih"><b>Prompt ${n+1}${fase?'':' · fase '+p.fase}</b><button class="btn sm dng" data-act="delPrompt" data-a="${i}">Quitar</button></div>
+ ${fase?'':F(`w:prompts.${i}.fase`,'Fase EVIDA en la que lo usaste',{type:'select',rr:1,opts:FASES.map(f=>[f.k,f.k+' — '+f.n])})}
+ <div class="grid g2">${F(`w:prompts.${i}.herramienta`,'Herramienta de IA')}${F(`w:prompts.${i}.destino`,'¿Qué hiciste con la respuesta?',{type:'select',opts:[['','Selecciona…'],['usado','La usé tras verificarla'],['corregido','La corregí'],['descartado','La descarté']]})}</div>
+ ${F(`w:prompts.${i}.prompt`,'Prompt (texto exacto)',{type:'textarea',rows:3,req:1})}
+ ${F(`w:prompts.${i}.respuesta`,'Resumen de la respuesta de la IA',{type:'textarea',rows:2})}
+ ${F(`w:prompts.${i}.verificacion`,'Cómo verificaste la respuesta (fuente real y procedimiento)',{type:'textarea',rows:2,req:1})}</div>`).join('')}
+ <button class="btn sm" data-act="addPrompt" data-a="${fase||'E'}">+ Registrar un prompt</button></details>`}
+ACT.addPrompt=f=>{CUR.prompts.push({id:uid(),fase:f,herramienta:'',prompt:'',respuesta:'',verificacion:'',destino:'',fecha:ahora()});OPEN['pp'+(ruta()[2]==='IA'?'all':f)]=true;guardar();rerender()};
+ACT.delPrompt=i=>{CUR.prompts.splice(+i,1);guardar();rerender()};
 /* ====== Informe EVIDA, ayuda ====== */
 function fbSlot(w,k,o){if(o.fb==='edit')return `<div class="fb noprint">${F('w:feedback.'+k,k==='general'?'Retroalimentación general del docente':'Retroalimentación del docente — fase '+k,{type:'textarea',rows:3})}</div>`;return fbBox(w,k)}
 const tr1=(l,v)=>`<dt>${l}</dt><dd>${txt(v)?nl(v):'<span class="empty">—</span>'}</dd>`;
@@ -848,7 +870,7 @@ function informeHTML(w,o){o=o||{};const st=estado(w),sj=asigDe(w.ctx.asignaturaI
  const sec=(k,t,b)=>`<h2 class="${k}">${t}</h2>${b}`;
  const tabE=`<div class="tw"><table><thead><tr><th>#</th><th>Afirmación</th><th>Naturaleza</th><th>Tipo · nivel</th><th>Procedencia</th><th>Enlace / referencia</th><th>Relev. · Confiab.</th><th>Vacíos</th></tr></thead><tbody>${w.E.items.filter(x=>txt(x.afirmacion)||txt(x.fuente)).map(x=>`<tr><td>${evN(w,x.id)}</td><td>${nl(x.afirmacion)}${x.viaIA?'<br><i>(sugerido por IA; comprobado en la fuente)</i>':''}</td><td>${x.cat==='opinion'?'Opinión':'Dato verificable'}</td><td>${esc(lab(TIPOS_EV,x.tipo))}${x.nivel?'<br>'+esc(lab(NIVEL_FUENTE,x.nivel).split(' (')[0]):''}</td><td>${esc(x.fuente)}<br>${esc(x.autor)}<br>${esc(x.fecha)}</td><td>${nl(x.enlace)}</td><td>${esc(lab(ALTA_MEDIA,x.relevancia))} · ${esc(lab(ALTA_MEDIA,x.confiabilidad))}</td><td>${nl(x.vacios)}</td></tr>`).join('')||'<tr><td colspan="8" class="empty">Sin evidencias</td></tr>'}</tbody></table></div>${txt(w.E.vacios)?`<p><b>Vacíos generales:</b> ${nl(w.E.vacios)}</p>`:''}`;
  const gI=CATS.map(k=>{const it=w.I.items.filter(x=>x.cat===k.k&&txt(x.texto));return it.length?`<p><b>${k.n}</b></p><ul>${it.map(x=>`<li>${nl(x.texto)}${(x.ev||[]).length?` <i>(${x.ev.map(id=>evN(w,id)).join(', ')})</i>`:''}</li>`).join('')}</ul>`:''}).join('');
- const tabV=`<div class="tw"><table><thead><tr><th>Se verifica</th><th>Fuente original</th><th>Contraste</th><th>Tipo</th><th>Cómo se verificó</th><th>Resultado</th><th>Corrección / cambio</th></tr></thead><tbody>${w.V.items.filter(x=>txt(x.afirmacion)).map(x=>`<tr><td>${nl(x.afirmacion)}${x.ref?`<br><i>(${evN(w,x.ref)})</i>`:''}</td><td>${nl(x.original)}</td><td>${nl(x.contraste)}</td><td>${esc(lab(TIPOS_VER,x.tipo).split(' (')[0])}</td><td>${nl(x.como)}</td><td><b>${esc(lab(RESULTADOS,x.resultado))}</b></td><td>${nl(x.correccion)}${x.regreso?`<br><i>Regresó a ${x.regreso==='E'?'Evidencia':'Interpretación'}</i>`:''}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">Sin verificaciones</td></tr>'}</tbody></table></div>`;
+ const tabV=`<div class="tw"><table><thead><tr><th>N.º</th><th>Se verifica</th><th>Fuente original</th><th>Contraste</th><th>Tipo</th><th>Cómo se verificó</th><th>Resultado</th><th>Corrección / cambio</th></tr></thead><tbody>${w.V.items.filter(x=>txt(x.afirmacion)).map((x,n)=>`<tr><td>V${n+1}</td><td>${nl(x.afirmacion)}${x.ref?`<br><i>(${evN(w,x.ref)})</i>`:''}</td><td>${nl(x.original)}</td><td>${nl(x.contraste)}</td><td>${esc(lab(TIPOS_VER,x.tipo).split(' (')[0])}</td><td>${nl(x.como)}</td><td><b>${esc(lab(RESULTADOS,x.resultado))}</b></td><td>${nl(x.correccion)}${x.regreso?`<br><i>Regresó a ${x.regreso==='E'?'Evidencia':'Interpretación'}</i>`:''}</td></tr>`).join('')||'<tr><td colspan="8" class="empty">Sin verificaciones</td></tr>'}</tbody></table></div>`;
  const as=altsOk(w),cs=critsOn(w),tt=totales(w);
  const mat=as.length&&cs.length?`<div class="tw"><table><thead><tr><th>Criterio (peso)</th><th>Evidencia que lo respalda</th>${as.map(a=>`<th>${esc(a.nombre)}</th>`).join('')}</tr></thead><tbody>${cs.map(k=>`<tr><td>${esc(k.nombre)} (${k.peso||1})</td><td>${nl(k.evidencia)}</td>${as.map(a=>`<td>${w.D.puntajes[a.id+'|'+k.id]||'—'}</td>`).join('')}</tr>`).join('')}</tbody><tfoot><tr><td colspan="2">Suma ponderada (orientativa, no decide)</td>${as.map(a=>`<td>${tt[a.id]}</td>`).join('')}</tr></tfoot></table></div>`:'<p class="empty">Matriz no completada.</p>';
  const D=w.D;
@@ -857,28 +879,40 @@ function informeHTML(w,o){o=o||{};const st=estado(w),sj=asigDe(w.ctx.asignaturaI
   :c.tipo==='AA'?`<dl class="kv">${tr1('Plan personal de trabajo',c.plan)}</dl><p><b>Fuentes consultadas</b></p><ul>${w.comp.fuentes.filter(x=>txt(x.texto)).map(x=>`<li>${nl(x.texto)}${txt(x.tipo)?' ('+esc(x.tipo)+')':''}${txt(x.util)?' — '+esc(x.util):''}</li>`).join('')||'<li class="empty">—</li>'}</ul><p><b>Bitácora de avance</b></p><ul>${w.comp.bitacora.filter(x=>txt(x.texto)).map(x=>`<li>${txt(x.fecha)?'<b>'+esc(x.fecha)+':</b> ':''}${nl(x.texto)}${txt(x.horas)?' <i>('+esc(x.horas)+')</i>':''}</li>`).join('')||'<li class="empty">—</li>'}</ul><dl class="kv">${tr1('Reflexión metacognitiva',w.comp.metacognicion)}</dl>`:'';
  const sa=todasDims(w.comp.autoeval)?puntaje20(w.comp.autoeval,pes):null,sd=todasDims(w.rubricaDoc)?puntaje20(w.rubricaDoc,pes):null;
  const rub=`<p class="hint">Los puntajes automáticos son <b>retroalimentación orientativa</b> calculada a partir de lo registrado; <b>no son una calificación ni sustituyen la evaluación docente</b>.</p><div class="tw"><table><thead><tr><th>Dimensión</th><th>Peso</th><th>Orientación automática</th><th>Autoevaluación</th><th>Docente</th></tr></thead><tbody>${['E','V','I','D','A'].map(k=>`<tr><td><b>${k} — ${FASES.find(f=>f.k===k).n}</b></td><td>${pes[k]}</td><td>${r[k].nivel} · ${NIVELES[r[k].nivel]}${r[k].msgs.length?'<br><small>'+r[k].msgs.map(esc).join(' ')+'</small>':''}</td><td>${+w.comp.autoeval[k]?w.comp.autoeval[k]+' · '+NIVELES[w.comp.autoeval[k]]:'—'}</td><td>${o.fb==='edit'?`<select aria-label="Puntaje docente ${k}" data-bind="w:rubricaDoc.${k}" data-num="1" data-rr="1"><option value="">—</option>${[1,2,3,4].map(n=>`<option value="${n}"${+w.rubricaDoc[k]===n?' selected':''}>${n} · ${NIVELES[n]}</option>`).join('')}</select><br><small>${esc(S.config.rubrica.desc[k][w.rubricaDoc[k]]||'')}</small>`:(+w.rubricaDoc[k]?w.rubricaDoc[k]+' · '+NIVELES[w.rubricaDoc[k]]:'—')}</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="2">Total sobre 20</td><td>${r.total==null?'—':r.total} (orientativo)</td><td>${sa==null?'—':sa}</td><td>${sd==null?'—':sd}</td></tr></tfoot></table></div>`;
+
+ const po=promptsOrden(w).filter(({p})=>txt(p.prompt));
+ const DEST={usado:'Usada tras verificarla',corregido:'Corregida',descartado:'Descartada'};
+ const tabP=w.IA.uso==='si'&&po.length?`<p class="hint">Orden: primero los prompts de Evidencia, luego Verificación, Interpretación, Decisión y Argumentación; dentro de cada fase, el orden en que se registraron.</p><div class="tw"><table><thead><tr><th>N.º</th><th>Fase</th><th>Herramienta</th><th>Prompt</th><th>Respuesta (resumen)</th><th>Paso de verificación</th><th>Destino</th></tr></thead><tbody>${po.map(({p},n)=>`<tr><td>P${n+1}</td><td><b>${esc(p.fase)}</b> — ${esc((FASES.find(f=>f.k===p.fase)||{}).n||'')}</td><td>${esc(p.herramienta)}</td><td>${nl(p.prompt)}</td><td>${nl(p.respuesta)}</td><td>${nl(p.verificacion)}</td><td>${esc(DEST[p.destino]||'—')}</td></tr>`).join('')}</tbody></table></div>`:(w.IA.uso==='no'?'<p>No se usó IA en esta actividad.</p>':'<p class="empty">Sin prompts registrados.</p>');
+ const nV=w.V.items.filter(x=>txt(x.afirmacion)).length,nReg=w.historial.filter(h=>h.tipo==='regreso').length;
+ const resumen=`<dl class="kv">${tr1('Decisión',D.decision)}${tr1('Tesis',w.A.tesis)}${tr1('Nivel de confianza',D.confianza)}${tr1('Carácter',D.provisional?'Decisión provisional, sujeta a revisión con nueva evidencia':'')}${tr1('Ruta seguida','E → V'+(nReg?' ↺ (con '+nReg+' regreso'+(nReg>1?'s':'')+' a Evidencia)':'')+' → I → D → A')}${tr1('Evidencias · verificaciones',w.E.items.filter(x=>txt(x.afirmacion)).length+' evidencias · '+nV+' verificaciones')}${tr1('Uso de IA',w.IA.uso==='si'?'Sí · '+po.length+' prompt'+(po.length===1?'':'s')+' registrados con su verificación':w.IA.uso==='no'?'No se usó IA':'')}</dl>`;
+ const secuencia=['E','V','I','D','A'].map(k=>{const ps=po.filter(o=>o.p.fase===k),vs=k==='V'?w.V.items.filter(x=>txt(x.afirmacion)).length:0;return `<li><b>${k} — ${FASES.find(f=>f.k===k).n}</b>: ${k==='E'?w.E.items.filter(x=>txt(x.afirmacion)).length+' evidencias':k==='V'?vs+' verificaciones':k==='I'?w.I.items.filter(x=>txt(x.texto)).length+' enunciados clasificados':k==='D'?as.length+' alternativas comparadas':'tesis con objeción y respuesta'} · ${ps.length} prompt${ps.length===1?'':'s'} de IA</li>`}).join('');
  const hist=w.historial.length?`<ul class="hist">${w.historial.map(h=>histLi(h)).join('')}</ul>`:'<p class="empty">Sin cambios de posición registrados.</p>';
- return `<article class="rep" id="rep-${w.id}"><h1>Informe EVIDA ${badge}</h1>
+ return `<article class="rep" id="rep-${w.id}"><h1>Informe EVIDA — Resultado de la actividad ${badge}</h1>
  <dl class="kv">${tr1('Estudiante',w.estudiante||S.estudiante.nombre)}${tr1('Asignatura',sj?sj.nombre:'')}${tr1('Unidad / tema',[c.unidad,c.tema].filter(txt).join(' / '))}${tr1('Tipo de actividad',c.tipo?c.tipo+' — '+TIPOS[c.tipo].n:'')}${tr1('Actividad',c.titulo)}${tr1('Resultado de aprendizaje',c.ra)}${tr1('Entregable esperado',c.entregable)}${tr1('Fecha límite',c.fecha)}${tr1('Modalidad',c.participacion==='grupal'?'Grupal: '+c.integrantes:'Individual')}${tr1('Última actualización',fechaCorta(w.actualizado))}${tr1('Avance',st.pct+'% · '+st.txt)}</dl>
  <h2 class="x">Problema, caso, reto o pregunta</h2><p>${nl(c.problema)}</p>
+ ${sec('x','Resultado de la actividad',resumen+`<p><b>Recorrido por la secuencia E → V → I → D → A</b></p><ol>${secuencia}</ol>`)}
  ${sec('E','E — Evidencia: ¿qué sé y con qué respaldo?',tabE+fbSlot(w,'E',o))}
  ${sec('V','V — Verificación: ¿cómo compruebo que es confiable?',tabV+fbSlot(w,'V',o))}
  ${sec('I','I — Interpretación: ¿qué significa la evidencia?',`<dl class="kv">${tr1('Qué significa la evidencia',w.I.significado)}${tr1('Relación entre los datos',w.I.relaciones)}</dl>${gI}<p><b>Interpretaciones alternativas</b></p><ul>${w.I.alternativas.filter(a=>txt(a.texto)).map(a=>`<li>${nl(a.texto)}</li>`).join('')||`<li class="empty">${w.I.sinAlt?'No aplica: '+esc(w.I.justAlt):'—'}</li>`}</ul><dl class="kv">${tr1('Qué no se puede concluir todavía',w.I.noConcluir)}</dl>`+fbSlot(w,'I',o))}
  ${sec('D','D — Decisión: ¿qué concluyo, propongo o hago?',`<p><b>Alternativas consideradas:</b> ${as.map(a=>esc(a.nombre)+(txt(a.descripcion)?' ('+esc(a.descripcion)+')':'')).join('; ')||'—'}</p>${mat}<dl class="kv">${tr1('Riesgos y consecuencias',D.riesgos)}${tr1('Decisión',D.decision)}${tr1('Nivel de confianza',D.confianza)}${tr1('Carácter',D.provisional?'Decisión provisional, sujeta a revisión con nueva evidencia':'')}${tr1('Incertidumbres que permanecen',D.incertidumbres)}</dl>`+fbSlot(w,'D',o))}
  ${sec('A','A — Argumentación: ¿por qué mi decisión es defendible?',argHTML(w)+fbSlot(w,'A',o))}
  ${comp?sec('x','Registro de la actividad '+(c.tipo||''),comp):''}
- ${sec('x','Cambios de posición',hist)}
+ ${sec('x','Bitácora de prompts de IA en secuencia E → V → I → D → A',tabP)}
+ ${sec('x','Cambios de posición y regresos de V a E',hist)}
  ${sec('x','Declaración de uso de IA',`<p class="callout info">${REGLA_IA}</p><pre style="white-space:pre-wrap;font-family:inherit">${esc(declaracionIA(w))}</pre>`)}
  ${sec('x','Rúbrica EVIDA (20 puntos)',rub)}
  ${o.fb==='edit'?`<div class="fb noprint">${F('w:rubricaDoc.comentario','Comentario del docente sobre la rúbrica',{type:'textarea',rows:3})}${fbSlot(w,'general',o)}</div>`:(txt(w.rubricaDoc.comentario)?`<div class="fb"><b>Comentario del docente</b><p>${nl(w.rubricaDoc.comentario)}</p></div>`:'')+fbBox(w,'general')}
  <p class="hint">Informe generado con el Asistente Académico EVIDA. EVIDA es una propuesta didáctica pendiente de validación empírica; esta herramienta no sustituye la evaluación docente.</p></article>`}
 function vInfV(w,st){const faltan=[['ctx','Contexto'],['E','Evidencia'],['V','Verificación'],['I','Interpretación'],['D','Decisión'],['A','Argumentación'],['comp','Registro de la actividad'],['IA','Declaración de IA']].filter(([k])=>!st[k].ok);
  LIVE=null;
- return `<div class="row mb noprint"><button class="btn pri" data-act="print">Imprimir / guardar como PDF</button><button class="btn" data-act="dlInforme">Descargar informe (HTML)</button><button class="btn" data-act="expUno">Exportar actividad (.json)</button>
+ return `<div class="row mb noprint"><button class="btn" data-act="print">Imprimir / guardar como PDF</button><button class="btn pri" data-act="dlDoc">Descargar documento de resultado (Word)</button><button class="btn" data-act="dlInforme">Descargar informe (HTML)</button><button class="btn" data-act="expUno">Exportar actividad (.json)</button>
  ${w.estado==='finalizado'?`<button class="btn" data-act="reabrir">Reabrir para editar</button>`:`<button class="btn pri" data-act="finalizar" ${st.completo?'':'disabled'}>Marcar como finalizada</button>`}</div>
  ${faltan.length?`<div class="callout warn noprint"><b class="t">Aún no está completa. Faltan fases:</b><ul>${faltan.map(([k,n])=>`<li><button class="btn sm" data-act="go" data-a="${k}">${n}</button> ${esc(st[k].err[0]||'')}</li>`).join('')}</ul>Puedes imprimir ahora como borrador.</div>`:`<div class="callout ok noprint"><b class="t">Tu actividad está completa.</b>${w.estado==='finalizado'?'Ya está finalizada y aparece en tu portafolio.':'Pulsa «Marcar como finalizada» para incluirla en tu portafolio.'}</div>`}
  ${informeHTML(w,{})}`}
-ACT.dlInforme=()=>descargar(`informe-evida-${(CUR.ctx.titulo||'actividad').toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40)}.html`,docHTML('Informe EVIDA',informeHTML(CUR,{})),'text/html');
+ACT.dlInforme=()=>descargar(`informe-evida-${slug(CUR)}.html`,docHTML('Informe EVIDA',informeHTML(CUR,{})),'text/html');
+const slug=w=>(w.ctx.titulo||'actividad').toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40);
+const wordDoc=(tit,body)=>`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${esc(tit)}</title><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#222}h1{font-size:20pt}h2{font-size:14pt;border-bottom:1px solid #999;margin-top:18pt}table{border-collapse:collapse;width:100%}th,td{border:1px solid #888;padding:4pt;vertical-align:top;font-size:9.5pt}th{background:#eee}dt{font-weight:bold}.hint,small{color:#555}.noprint,button,select{display:none}</style></head><body>${body}</body></html>`;
+ACT.dlDoc=()=>descargar(`resultado-evida-${slug(CUR)}.doc`,'\ufeff'+wordDoc('Resultado de la actividad EVIDA',informeHTML(CUR,{})),'application/msword');
 ACT.expUno=()=>descargar('actividad-evida.json',JSON.stringify({tipo:'evida-trabajos',version:1,exportado:ahora(),estudiante:S.estudiante,trabajos:[CUR]},null,1),'application/json');
 ACT.finalizar=()=>{CUR.estado='finalizado';guardarYa();rerender();toast('Actividad finalizada. Ya está en tu portafolio.')};
 ACT.reabrir=()=>{CUR.estado='borrador';guardarYa();rerender()};
@@ -886,11 +920,11 @@ ACT.reabrir=()=>{CUR.estado='borrador';guardarYa();rerender()};
 /* ---------- Ayuda ---------- */
 function vAyuda(){return `<h1>Guía breve de instalación y uso</h1>
  <div class="card"><h2>Instalación</h2><ol><li>Guarda el archivo <b>Asistente-Academico-EVIDA.html</b> en tu computador.</li><li>Ábrelo con un navegador actual (Chrome, Edge, Firefox o Safari). No necesita internet ni instalar nada.</li><li>Tu trabajo se guarda automáticamente <b>en ese navegador</b>. Usa siempre el mismo navegador y el mismo archivo; para cambiar de equipo usa «Exportar» e «Importar».</li><li>En el celular funciona igual: abre el archivo o alójalo en cualquier servidor web estático.</li></ol></div>
- <div class="card"><h2>Cómo se usa (estudiante)</h2><ol><li><b>Nueva actividad</b>: elige asignatura, tipo (ACD, APE o AA) y escribe el problema.</li><li><b>E · Evidencia</b>: registra datos con su fuente, autor o enlace. Necesitas al menos una evidencia trazable.</li><li><b>V · Verificación</b>: contrasta tu evidencia y documenta cómo lo hiciste. Si aparecen contradicciones o fuentes débiles, usa «Volver y revisar Evidencia».</li><li><b>I · Interpretación</b>: explica qué significa la evidencia verificada, separa hechos, inferencias, supuestos, opiniones e hipótesis, y piensa en otra explicación.</li><li><b>D · Decisión</b>: compara alternativas con criterios explícitos y declara tu confianza.</li><li><b>A · Argumentación</b>: tesis, evidencia, razonamiento, objeción, respuesta y límites.</li><li>Completa el <b>registro de la actividad</b>, la <b>declaración de IA</b> y descarga tu <b>informe</b> (imprimir → Guardar como PDF).</li></ol></div>
+ <div class="card"><h2>Cómo se usa (estudiante)</h2><ol><li><b>Nueva actividad</b>: elige asignatura, tipo (ACD, APE o AA) y escribe el problema.</li><li><b>E · Evidencia</b>: registra datos con su fuente, autor o enlace. Necesitas al menos una evidencia trazable.</li><li><b>V · Verificación</b>: contrasta tu evidencia y documenta cómo lo hiciste. Si aparecen contradicciones o fuentes débiles, usa «Volver y revisar Evidencia».</li><li><b>I · Interpretación</b>: explica qué significa la evidencia verificada, separa hechos, inferencias, supuestos, opiniones e hipótesis, y piensa en otra explicación.</li><li><b>D · Decisión</b>: compara alternativas con criterios explícitos y declara tu confianza.</li><li><b>A · Argumentación</b>: tesis, evidencia, razonamiento, objeción, respuesta y límites.</li><li>Completa el <b>registro de la actividad</b> y la <b>declaración de IA</b> (si usaste IA, registra cada prompt con su verificación) y descarga el <b>documento de resultado</b> (Word, PDF o HTML) con la secuencia E → V → I → D → A, los prompts y los pasos de verificación.</li></ol></div>
  <div class="card"><h2>Cómo se usa (docente)</h2><p>Pulsa «Docente» arriba. En <b>Asignaturas</b> cargas unidades, temas, resultados de aprendizaje y sugerencias; en <b>Actividades</b> diseñas ACD, APE y AA con evidencia admisible y ponderaciones; en <b>Rúbrica y criterios</b> editas descriptores y pesos; en <b>Portafolios</b> revisas los trabajos, dejas retroalimentación por fase y ajustas puntajes. Para distribuir tu configuración, usa <b>Datos › Exportar configuración</b> y pide a tus estudiantes importarla; ellos te devuelven su portafolio con «Exportar mis actividades» y tú lo importas en <b>Datos</b>.</p><p class="hint">Importante: el cambio de rol no tiene contraseña; la herramienta funciona de forma local. Para un uso institucional con cuentas deberá conectarse a un servidor con autenticación.</p></div>
  <div class="card"><h2>Glosario sin tecnicismos</h2><dl class="kv"><dt>Evidencia</dt><dd>Dato o hecho que otra persona puede encontrar y comprobar.</dd><dt>Fuente primaria</dt><dd>El origen del dato (la norma, el registro, la entrevista, el informe original).</dd><dt>Fuente secundaria</dt><dd>Alguien que comenta o resume la fuente primaria.</dd><dt>Inferencia</dt><dd>Lo que tú concluyes a partir de los datos; no es el dato.</dd><dt>Supuesto</dt><dd>Algo que das por cierto sin haberlo comprobado.</dd><dt>Triangulación</dt><dd>Comprobar algo con varias fuentes independientes.</dd><dt>Trazable</dt><dd>Que se puede seguir el rastro hasta su origen.</dd><dt>Causalidad</dt><dd>Decir que algo produce otra cosa; necesita más evidencia que decir que ocurren juntas.</dd></dl></div>
  <div class="callout info"><b class="t">${REGLA_IA}</b></div>
- <div class="card"><h2>Alcance de EVIDA</h2><p>EVIDA es una propuesta didáctica transversal, iterativa y orientada al razonamiento crítico, la toma de decisiones fundamentada y el uso responsable de IA. Se formula como propuesta conceptual y operativa <b>pendiente de validación empírica</b>; esta herramienta no afirma resultados de eficacia ni reemplaza la evaluación docente. Fuente metodológica: Documento Fundacional «Metodología EVIDA», v1.0, 2026.</p></div>`}
+ <div class="card"><h2>Alcance de EVIDA</h2><p>La secuencia de trabajo es E → V → I → D → A (las iniciales forman EVIDA): Evidencia, Verificación (con regreso a Evidencia si aparecen errores), Interpretación, Decisión y Argumentación. EVIDA es una propuesta didáctica transversal, iterativa y orientada al razonamiento crítico, la toma de decisiones fundamentada y el uso responsable de IA. Se formula como propuesta conceptual y operativa <b>pendiente de validación empírica</b>; esta herramienta no afirma resultados de eficacia ni reemplaza la evaluación docente. Fuente metodológica: Documento Fundacional «Metodología EVIDA», v1.0, 2026.</p></div>`}
 /* ====== Vistas del docente / administrador ====== */
 const OPEN={};let FILT={asig:'',est:''};
 document.addEventListener('toggle',e=>{const d=e.target;if(d.dataset&&d.dataset.oid)OPEN[d.dataset.oid]=d.open},true);
@@ -1008,6 +1042,13 @@ function crearDemo(){const w=nuevoTrabajo();const id=()=>uid();w.demo=true;w.est
  w.D.decision='Hacer un piloto de un mes de reserva anticipada para retiro antes de decidir sobre la entrega a domicilio.';
  w.D.confianza='medio';w.D.incertidumbres='No sabemos si el recargo sería aceptado ni cuánto influye el precio frente a la fila.';w.D.provisional=true;
  Object.assign(w.A,{tesis:'Conviene probar primero una reserva anticipada para retiro, porque responde a la fila con menor costo y riesgo que la entrega a domicilio.',evidenciaIds:[e1,e2],evidenciaClave:'E1 (12 de 20 evitan la fila, simulado, matizada por el conteo) y E2 (la entrega externa requiere autorización).',razonamiento:'Si la fila es una barrera, la reserva la elimina sin necesitar permisos ni repartidores; la entrega a domicilio depende de una autorización y de un costo aún no concluyente.',criterios:'Viabilidad, Costo, Riesgo, Impacto',objecion:'La reserva no atiende a quienes no quieren desplazarse hasta la cafetería.',respuesta:'Es cierto, pero no hay evidencia de que sea un grupo grande; el piloto permitirá medirlo antes de invertir en reparto.',limitaciones:'Datos simulados, muestra pequeña y un solo campus imaginario.',nuevaEvidencia:'Una encuesta mayor, datos reales de abandono de fila o cotizaciones definitivas de reparto.'});
+
+ w.prompts=[
+  {id:id(),fase:'E',herramienta:'Asistente de IA (ejemplo)',prompt:'Sugiere qué tipos de fuentes conviene buscar para decidir si una cafetería universitaria debe ofrecer entrega a domicilio. No me des conclusiones.',respuesta:'Propuso encuestas a clientes, el reglamento del campus e informes sectoriales.',verificacion:'Revisé que cada tipo de fuente existiera en el caso simulado y registré solo las que pude ubicar (E1, E2, E4).',destino:'usado',fecha:ahora()},
+  {id:id(),fase:'V',herramienta:'Asistente de IA (ejemplo)',prompt:'¿Qué evidencia contradictoria debería buscar para comprobar que el costo de reparto es el principal riesgo?',respuesta:'Sugirió comparar cotizaciones de mensajería y casos de otros campus.',verificacion:'Usé dos cotizaciones ficticias; el resultado fue no concluyente (V3). No acepté la afirmación de la IA como hecho.',destino:'corregido',fecha:ahora()},
+  {id:id(),fase:'I',herramienta:'Asistente de IA (ejemplo)',prompt:'Dame otra explicación posible de la caída de ventas al mediodía distinta de la fila.',respuesta:'Mencionó precio y variedad del menú.',verificacion:'La registré como interpretación alternativa y como supuesto sin comprobar; no la traté como dato.',destino:'usado',fecha:ahora()},
+  {id:id(),fase:'D',herramienta:'Asistente de IA (ejemplo)',prompt:'¿Qué riesgos tiene hacer un piloto de reserva anticipada? No elijas por mí.',respuesta:'Señaló baja adopción y carga extra para el personal.',verificacion:'Contrasté los riesgos con la observación del conteo de fila y escribí yo los criterios y la decisión.',destino:'usado',fecha:ahora()},
+  {id:id(),fase:'A',herramienta:'Asistente de IA (ejemplo)',prompt:'Plantea la mejor objeción a mi tesis de probar primero la reserva anticipada.',respuesta:'Indicó que no atiende a quienes no quieren desplazarse.',verificacion:'Comprobé que no hay evidencia del tamaño de ese grupo; redacté yo la respuesta y las limitaciones.',destino:'usado',fecha:ahora()}];
  w.IA={uso:'si',entries:[{id:id(),herramienta:'Asistente de IA (ejemplo)',finalidad:'Proponer palabras clave y riesgos posibles',instrucciones:'Le pedí posibles riesgos de un servicio de entrega en un campus y qué evidencia buscar; no le pedí que decidiera.',verificado:'Busqué el riesgo de costo en cotizaciones ficticias y lo registré como no concluyente.',descartado:'Descarté una cifra de ventas que no pude comprobar en ninguna fuente.',aporte:'Elegí las fuentes, verifiqué, comparé alternativas y escribí la decisión y el argumento.'}]};
  Object.assign(w.comp,{productos:[{id:id(),texto:'Hoja de conteo de fila (simulada)',enlace:'conteo_ejemplo.xlsx (no existe)'}],observaciones:[{id:id(),fecha:'2026-01-12',texto:'[Simulado] Al mediodía la fila supera 10 minutos y varias personas se retiran.'}],prueba:'Se plantea un piloto de un mes de reserva anticipada y comparar abandono de fila antes y después (simulado).',decisionAplicada:'Piloto de reserva anticipada (simulado).',resultados:'[Simulado] El abandono de fila baja de forma visible durante el piloto; el resultado es solo ilustrativo.'});
  return w}
